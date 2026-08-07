@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Analyseur Intelligent de Factures</title>
+    <link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+
+        <h1>📄 Analyseur Intelligent de Factures</h1>
+
+        <p>
+            Téléchargez une facture PDF ou une image afin que
+            l'Intelligence Artificielle analyse automatiquement
+            les informations importantes.
+        </p>
+
+    </header>
+
+    <section class="upload">
+
+        <h2>Importer une facture</h2>
+
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+
+            <input
+                type="file"
+                name="invoice"
+                id="invoice"
+                accept=".pdf,.png,.jpg,.jpeg"
+                required>
+
+            <button type="submit">
+                Analyser
+            </button>
+
+        </form>
+
+    </section>
+
+    <section class="result">
+
+        <h2>Résultats de l'analyse</h2>
+
+        <div class="card">
+
+            <div class="row">
+                <span>Nom du client</span>
+                <span>-</span>
+            </div>
+
+            <div class="row">
+                <span>Nom du fournisseur</span>
+                <span>-</span>
+            </div>
+
+            <div class="row">
+                <span>ICE Client</span>
+                <span>-</span>
+            </div>
+
+            <div class="row">
+                <span>ICE Fournisseur</span>
+                <span>-</span>
+            </div>
+
+            <div class="row">
+                <span>Date</span>
+                <span>-</span>
+            </div>
+
+            <div class="row">
+                <span>Montant HT</span>
+                <span>-</span>
+            </div>
+
+            <div class="row">
+                <span>TVA</span>
+                <span>-</span>
+            </div>
+
+            <div class="row">
+                <span>Montant TTC</span>
+                <span>-</span>
+            </div>
+
+        </div>
+
+    </section>
+
+    <footer>
+
+        © 2026 - AI Invoice Analyzer
+
+    </footer>
+
+</div>
+<script src="app.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,202 @@
+/* ==========================================================================
+   Analyseur Intelligent de Factures — Styles
+   ========================================================================== */
+
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --primary-light: #eef2ff;
+    --success: #16a34a;
+    --bg: #f4f5fb;
+    --card-bg: #ffffff;
+    --text-main: #1f2333;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --shadow: 0 4px 16px rgba(31, 35, 51, 0.06);
+    --shadow-hover: 0 8px 24px rgba(31, 35, 51, 0.1);
+    --radius: 14px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 40px 20px;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg) 320px);
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+/* ---------- Header ---------- */
+
+header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+header h1 {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    color: var(--text-main);
+}
+
+header p {
+    max-width: 520px;
+    margin: 0 auto;
+    color: var(--text-muted);
+    font-size: 0.98rem;
+}
+
+/* ---------- Sections communes ---------- */
+
+section {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    margin-bottom: 24px;
+    transition: box-shadow 0.2s ease;
+}
+
+section:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+section h2 {
+    font-size: 1.15rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--text-main);
+    border-left: 4px solid var(--primary);
+    padding-left: 10px;
+}
+
+/* ---------- Upload ---------- */
+
+.upload form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+}
+
+.upload input[type="file"] {
+    flex: 1 1 260px;
+    padding: 10px 12px;
+    border: 1.5px dashed var(--primary);
+    border-radius: 10px;
+    background: var(--primary-light);
+    color: var(--text-main);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.upload input[type="file"]::file-selector-button {
+    padding: 8px 14px;
+    margin-right: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.upload input[type="file"]::file-selector-button:hover {
+    background: var(--primary-dark);
+}
+
+.upload button[type="submit"] {
+    padding: 11px 26px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.upload button[type="submit"]:hover {
+    background: var(--primary-dark);
+}
+
+.upload button[type="submit"]:active {
+    transform: scale(0.97);
+}
+
+/* ---------- Résultats ---------- */
+
+.result .card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.result .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+}
+
+.result .row:last-child {
+    border-bottom: none;
+}
+
+.result .row:nth-child(even) {
+    background: #fafaff;
+}
+
+.result .row span:first-child {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.result .row span:last-child {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 32px;
+    padding-top: 16px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 520px) {
+    header h1 {
+        font-size: 1.6rem;
+    }
+
+    section {
+        padding: 20px;
+    }
+
+    .upload form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .upload button[type="submit"] {
+        width: 100%;
+    }
+}
