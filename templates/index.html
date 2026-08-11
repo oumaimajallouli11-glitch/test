@@ -4,108 +4,260 @@
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Analyseur Intelligent de Factures</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 
 </head>
 
+
 <body>
 
-<div class="container">
+    <!-- HEADER -->
 
     <header>
 
-        <h1>📄 Analyseur Intelligent de Factures</h1>
+        <h1>
+            📄 Analyseur Intelligent de Factures
+        </h1>
 
         <p>
-            Téléchargez une facture PDF ou une image afin que
-            l'Intelligence Artificielle analyse automatiquement
-            les informations importantes.
+            Téléchargez une facture et laissez notre système
+            extraire automatiquement les informations importantes.
         </p>
 
     </header>
 
-    <section class="upload">
 
-        <h2>Importer une facture</h2>
+    <!-- MAIN -->
 
-        <form action="/upload" method="POST" enctype="multipart/form-data">
+    <main>
 
-            <input
-                type="file"
-                name="invoice"
-                id="invoice"
-                accept=".pdf,.png,.jpg,.jpeg"
-                required>
 
-            <button type="submit">
-                Analyser
-            </button>
+        <!-- UPLOAD -->
 
-        </form>
+        <section class="card">
 
-    </section>
+            <h2>
+                Importer une facture
+            </h2>
 
-    <section class="result">
 
-        <h2>Résultats de l'analyse</h2>
+            <form
+                id="invoiceForm"
+                action="/upload"
+                method="POST"
+                enctype="multipart/form-data"
+            >
 
-        <div class="card">
+                <div class="upload-area">
 
-            <div class="row">
-                <span>Nom du client</span>
-                <span>-</span>
+                    <label for="invoice">
+                        Choisir une facture
+                    </label>
+
+
+                    <input
+                        type="file"
+                        id="invoice"
+                        name="invoice"
+                        accept=".png,.jpg,.jpeg,.webp"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    id="analyzeButton"
+                >
+                    Analyser
+                </button>
+
+            </form>
+
+
+            <!-- STATUS -->
+
+            <p
+                id="statusMessage"
+                class="status-message"
+            ></p>
+
+        </section>
+
+
+
+        <!-- RESULTS -->
+
+        <section class="card">
+
+            <h2>
+                Résultats de l'analyse
+            </h2>
+
+
+            <div class="results">
+
+
+                <div class="result-row">
+
+                    <span>
+                        Nom du client
+                    </span>
+
+                    <strong id="clientName">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="result-row">
+
+                    <span>
+                        Nom du fournisseur
+                    </span>
+
+                    <strong id="supplierName">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="result-row">
+
+                    <span>
+                        ICE Client
+                    </span>
+
+                    <strong id="clientIce">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="result-row">
+
+                    <span>
+                        ICE Fournisseur
+                    </span>
+
+                    <strong id="supplierIce">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="result-row">
+
+                    <span>
+                        Date de la facture
+                    </span>
+
+                    <strong id="invoiceDate">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="result-row">
+
+                    <span>
+                        Montant HT
+                    </span>
+
+                    <strong id="amountHT">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="result-row">
+
+                    <span>
+                        TVA
+                    </span>
+
+                    <strong id="tva">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="result-row">
+
+                    <span>
+                        Montant TTC
+                    </span>
+
+                    <strong id="amountTTC">
+                        -
+                    </strong>
+
+                </div>
+
+
             </div>
 
-            <div class="row">
-                <span>Nom du fournisseur</span>
-                <span>-</span>
+        </section>
+
+
+
+        <!-- OCR -->
+
+        <section class="card">
+
+            <h2>
+                Texte détecté par OCR
+            </h2>
+
+
+            <div
+                id="ocrResult"
+                class="ocr-result"
+            >
+                Aucun texte détecté pour le moment.
             </div>
 
-            <div class="row">
-                <span>ICE Client</span>
-                <span>-</span>
-            </div>
+        </section>
 
-            <div class="row">
-                <span>ICE Fournisseur</span>
-                <span>-</span>
-            </div>
 
-            <div class="row">
-                <span>Date</span>
-                <span>-</span>
-            </div>
+    </main>
 
-            <div class="row">
-                <span>Montant HT</span>
-                <span>-</span>
-            </div>
 
-            <div class="row">
-                <span>TVA</span>
-                <span>-</span>
-            </div>
-
-            <div class="row">
-                <span>Montant TTC</span>
-                <span>-</span>
-            </div>
-
-        </div>
-
-    </section>
+    <!-- FOOTER -->
 
     <footer>
 
-        © 2026 - AI Invoice Analyzer
+        <p>
+            Invoice AI Analyzer • Python • Flask • Tesseract OCR
+        </p>
 
     </footer>
 
-</div>
-<script src="{{ url_for('static', filename='app.js') }}"></script>
+
+    <!-- JAVASCRIPT -->
+
+    <script
+        src="{{ url_for('static', filename='app.js') }}"
+    ></script>
+
 </body>
 
 </html>
