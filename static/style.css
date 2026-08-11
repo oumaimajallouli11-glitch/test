@@ -1,35 +1,18 @@
-/* =========================
-   RESET
-========================= */
-
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
-
-/* =========================
-   BODY
-========================= */
-
 body {
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background:
-        linear-gradient(
-            135deg,
-            #eef2ff,
-            #f8faff
-        );
-
-    color: #1e293b;
-
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f7ff;
+    color: #1f2937;
     min-height: 100vh;
+}
+
+.page {
+    width: 100%;
 }
 
 
@@ -37,38 +20,49 @@ body {
    HEADER
 ========================= */
 
-header {
-
+.header {
+    background: linear-gradient(135deg, #5b4bdb, #7658e8);
+    color: white;
+    padding: 45px 20px 55px;
     text-align: center;
-
-    padding:
-        55px
-        20px
-        35px;
 }
 
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
 
-header h1 {
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 23px;
+}
+
+.header-text h1 {
     font-size: 38px;
-
-    color: #312e81;
-
     margin-bottom: 15px;
 }
 
-
-header p {
-
-    max-width: 700px;
-
+.header-text p {
+    max-width: 650px;
     margin: auto;
 
-    color: #64748b;
-
     font-size: 17px;
+    line-height: 1.7;
 
-    line-height: 1.6;
+    color: #eeeeff;
 }
 
 
@@ -77,161 +71,177 @@ header p {
 ========================= */
 
 main {
-
     width: 90%;
+    max-width: 1000px;
 
-    max-width: 950px;
+    margin: -35px auto 50px;
 
-    margin: auto;
-
-    padding-bottom: 50px;
+    position: relative;
 }
 
 
 /* =========================
-   CARD
+   CARDS
 ========================= */
 
-.card {
-
+.upload-card,
+.results-card {
     background: white;
 
-    border-radius: 18px;
+    border-radius: 20px;
 
-    padding: 30px;
+    padding: 35px;
 
     margin-bottom: 25px;
 
     box-shadow:
-        0 10px 30px
-        rgba(
-            15,
-            23,
-            42,
-            0.08
-        );
-}
-
-
-.card h2 {
-
-    font-size: 23px;
-
-    color: #312e81;
-
-    margin-bottom: 25px;
-
-    padding-left: 12px;
-
-    border-left:
-        4px solid
-        #4f46e5;
+        0 10px 30px rgba(46, 40, 90, 0.08);
 }
 
 
 /* =========================
-   FORM
+   SECTION HEADER
 ========================= */
 
-#invoiceForm {
-
+.section-header {
     display: flex;
+    align-items: center;
 
     gap: 15px;
 
-    align-items: center;
+    margin-bottom: 30px;
 }
 
+.section-icon {
+    width: 48px;
+    height: 48px;
 
-/* =========================
-   UPLOAD AREA
-========================= */
-
-.upload-area {
-
-    flex: 1;
-
-    min-height: 58px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 15px;
-
-    padding: 8px;
-
-    border:
-        2px dashed
-        #818cf8;
+    background: #eeebff;
 
     border-radius: 12px;
 
-    background: #f8f9ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 22px;
+}
+
+.section-header h2 {
+    font-size: 23px;
+
+    color: #24213f;
+
+    margin-bottom: 5px;
+}
+
+.section-header p {
+    color: #77758b;
+
+    font-size: 14px;
 }
 
 
 /* =========================
-   LABEL
+   DROP ZONE
 ========================= */
 
-.upload-area label {
+.drop-zone {
+    border: 2px dashed #c9c3f6;
 
-    background: #4f46e5;
+    border-radius: 18px;
 
-    color: white;
+    padding: 45px 20px;
 
-    padding:
-        12px
-        20px;
+    text-align: center;
 
-    border-radius: 9px;
-
-    font-weight: bold;
-
-    cursor: pointer;
+    background: #faf9ff;
 
     transition: 0.2s;
 }
 
+.drop-zone:hover {
+    border-color: #6955df;
 
-.upload-area label:hover {
-
-    background: #3730a3;
+    background: #f7f5ff;
 }
 
+.upload-big-icon {
+    font-size: 48px;
 
-/* =========================
-   FILE INPUT
-========================= */
+    margin-bottom: 15px;
+}
 
-.upload-area input {
+.drop-zone h3 {
+    font-size: 19px;
 
-    width: 100%;
+    color: #302c50;
+
+    margin-bottom: 8px;
+}
+
+.drop-zone p {
+    color: #858298;
 
     font-size: 14px;
 
-    color: #64748b;
+    margin-bottom: 20px;
 }
 
 
 /* =========================
-   BUTTON
+   FILE BUTTON
 ========================= */
 
-#analyzeButton {
+.file-button {
+    display: inline-block;
 
-    min-width: 150px;
+    background: #6754df;
 
-    padding:
-        14px
-        24px;
+    color: white;
 
-    border: none;
+    padding: 13px 25px;
 
     border-radius: 10px;
 
-    background: #4f46e5;
+    cursor: pointer;
+
+    font-weight: bold;
+
+    transition: 0.2s;
+}
+
+.file-button:hover {
+    background: #5542c8;
+
+    transform: translateY(-1px);
+}
+
+.file-name {
+    margin-top: 15px;
+
+    color: #696579;
+
+    font-size: 14px;
+}
+
+
+/* =========================
+   ANALYZE BUTTON
+========================= */
+
+.analyze-button {
+    width: 100%;
+
+    border: none;
+
+    margin-top: 20px;
+
+    padding: 16px;
+
+    border-radius: 11px;
+
+    background: #6754df;
 
     color: white;
 
@@ -244,23 +254,59 @@ main {
     transition: 0.2s;
 }
 
+.analyze-button:hover {
+    background: #5542c8;
 
-#analyzeButton:hover {
+    transform: translateY(-1px);
+}
 
-    background: #3730a3;
+.analyze-button:disabled {
+    opacity: 0.6;
 
-    transform:
-        translateY(-1px);
+    cursor: not-allowed;
 }
 
 
-#analyzeButton:disabled {
+/* =========================
+   LOADING
+========================= */
 
-    background: #a5b4fc;
+.loading {
+    display: flex;
 
-    cursor: not-allowed;
+    justify-content: center;
+    align-items: center;
 
-    transform: none;
+    gap: 12px;
+
+    margin-top: 20px;
+
+    color: #6754df;
+
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+
+    border: 3px solid #ddd8ff;
+
+    border-top-color: #6754df;
+
+    border-radius: 50%;
+
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 
@@ -268,67 +314,83 @@ main {
    STATUS
 ========================= */
 
-.status-message {
-
+.status {
     margin-top: 15px;
 
-    color: #64748b;
+    text-align: center;
 
     font-size: 14px;
 }
 
 
 /* =========================
-   RESULTS
+   INFORMATION GRID
 ========================= */
 
-.results {
+.information-grid {
+    display: grid;
 
-    border:
-        1px solid
-        #e2e8f0;
+    grid-template-columns: 1fr 1fr;
 
-    border-radius: 12px;
-
-    overflow: hidden;
+    gap: 15px;
 }
 
-
-.result-row {
-
+.information-box {
     display: flex;
-
-    justify-content: space-between;
 
     align-items: center;
 
-    padding:
-        17px
-        20px;
+    gap: 15px;
 
-    border-bottom:
-        1px solid
-        #e2e8f0;
+    padding: 18px;
+
+    border: 1px solid #eceaf5;
+
+    border-radius: 13px;
+
+    background: #fcfcff;
 }
 
+.information-icon {
+    width: 42px;
+    height: 42px;
 
-.result-row:last-child {
+    border-radius: 10px;
 
-    border-bottom: none;
+    background: #eeebff;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    font-size: 19px;
 }
 
+.information-box > div {
+    display: flex;
 
-.result-row span {
+    flex-direction: column;
 
-    font-weight: 600;
-
-    color: #475569;
+    gap: 5px;
 }
 
+.label {
+    font-size: 13px;
 
-.result-row strong {
+    color: #858298;
+}
 
-    color: #1e293b;
+.information-box strong {
+    font-size: 15px;
+
+    color: #292542;
+}
+
+.ttc {
+    background: #f5f3ff;
+
+    border-color: #dcd7ff;
 }
 
 
@@ -336,25 +398,48 @@ main {
    OCR
 ========================= */
 
-.ocr-result {
+.ocr-container {
+    margin-top: 30px;
 
-    min-height: 200px;
+    border-top: 1px solid #eceaf5;
 
-    padding: 20px;
+    padding-top: 30px;
+}
 
-    background: #f8fafc;
+.ocr-title {
+    display: flex;
 
-    border:
-        1px solid
-        #e2e8f0;
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 15px;
+}
+
+.ocr-title h3 {
+    color: #292542;
+
+    margin-bottom: 5px;
+}
+
+.ocr-title p {
+    color: #858298;
+
+    font-size: 13px;
+}
+
+.ocr-text {
+    background: #f8f8fc;
+
+    border: 1px solid #e8e6f0;
 
     border-radius: 12px;
 
-    color: #334155;
+    min-height: 150px;
 
-    font-family:
-        "Courier New",
-        monospace;
+    padding: 20px;
+
+    color: #4c485f;
 
     font-size: 14px;
 
@@ -362,7 +447,11 @@ main {
 
     white-space: pre-wrap;
 
-    overflow-x: auto;
+    overflow-wrap: break-word;
+}
+
+.empty-message {
+    color: #9996a8;
 }
 
 
@@ -371,65 +460,52 @@ main {
 ========================= */
 
 footer {
-
     text-align: center;
 
-    padding:
-        25px;
+    padding: 30px 20px 45px;
 
-    color: #94a3b8;
+    color: #858298;
 
-    font-size: 14px;
+    font-size: 13px;
+}
+
+footer span {
+    display: block;
+
+    margin-top: 7px;
+
+    color: #aaa7b7;
 }
 
 
 /* =========================
-   MOBILE
+   RESPONSIVE
 ========================= */
 
 @media (max-width: 700px) {
 
-    header h1 {
-
+    .header-text h1 {
         font-size: 28px;
     }
 
-
-    header p {
-
+    .header-text p {
         font-size: 15px;
     }
 
-
-    #invoiceForm {
-
-        flex-direction: column;
-
-        align-items: stretch;
+    main {
+        width: 94%;
     }
 
-
-    .upload-area {
-
-        flex-direction: column;
-
-        align-items: stretch;
+    .upload-card,
+    .results-card {
+        padding: 22px;
     }
 
-
-    #analyzeButton {
-
-        width: 100%;
+    .information-grid {
+        grid-template-columns: 1fr;
     }
 
-
-    .result-row {
-
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 5px;
+    .drop-zone {
+        padding: 35px 15px;
     }
-
 }

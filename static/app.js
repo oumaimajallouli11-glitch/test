@@ -1,232 +1,231 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
 
-    console.log("APP.JS IS WORKING");
+    const form = document.getElementById("invoiceForm");
+    const fileInput = document.getElementById("invoice");
+    const fileName = document.getElementById("fileName");
 
+    const analyzeButton = document.getElementById("analyzeButton");
 
-    // =========================
-    // GET HTML ELEMENTS
-    // =========================
+    const loading = document.getElementById("loading");
+    const statusMessage = document.getElementById("statusMessage");
 
-    const form =
-        document.getElementById("invoiceForm");
+    const ocrText = document.getElementById("ocrText");
 
-    const fileInput =
-        document.getElementById("invoice");
+    const clientName = document.getElementById("clientName");
+    const supplierName = document.getElementById("supplierName");
 
-    const analyzeButton =
-        document.getElementById("analyzeButton");
+    const clientICE = document.getElementById("clientICE");
+    const supplierICE = document.getElementById("supplierICE");
 
-    const ocrResult =
-        document.getElementById("ocrResult");
+    const invoiceDate = document.getElementById("invoiceDate");
 
-    const statusMessage =
-        document.getElementById("statusMessage");
-
-
-    // =========================
-    // CHECK ELEMENTS
-    // =========================
-
-    if (!form) {
-
-        console.error(
-            "invoiceForm not found"
-        );
-
-        return;
-    }
+    const amountHT = document.getElementById("amountHT");
+    const tva = document.getElementById("tva");
+    const amountTTC = document.getElementById("amountTTC");
 
 
-    if (!fileInput) {
+    // =====================================
+    // SELECT FILE
+    // =====================================
 
-        console.error(
-            "invoice input not found"
-        );
+    fileInput.addEventListener("change", function () {
 
-        return;
-    }
+        if (fileInput.files.length > 0) {
 
+            fileName.textContent =
+                fileInput.files[0].name;
 
-    console.log(
-        "Invoice form is ready."
-    );
+        } else {
 
+            fileName.textContent =
+                "Aucun fichier sélectionné";
+        }
 
-    // =========================
-    // FORM SUBMIT
-    // =========================
-
-    form.addEventListener(
-        "submit",
-        async (event) => {
-
-            // Stop normal HTML form submission
-            event.preventDefault();
+    });
 
 
-            console.log(
-                "FORM SUBMITTED"
-            );
+    // =====================================
+    // FORM SUBMISSION
+    // =====================================
+
+    form.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
 
 
-            // =========================
-            // CHECK FILE
-            // =========================
+        // Check file
 
-            if (!fileInput.files.length) {
-
-                alert(
-                    "Veuillez sélectionner une facture."
-                );
-
-                return;
-            }
-
-
-            const file =
-                fileInput.files[0];
-
-
-            console.log(
-                "File selected:",
-                file.name
-            );
-
-
-            // =========================
-            // LOADING
-            // =========================
-
-            analyzeButton.disabled = true;
-
-            analyzeButton.textContent =
-                "Analyse en cours...";
-
+        if (fileInput.files.length === 0) {
 
             statusMessage.textContent =
-                "Envoi de la facture au serveur...";
+                "Veuillez sélectionner une facture.";
+
+            return;
+        }
 
 
-            // =========================
-            // FORM DATA
-            // =========================
+        // Show loading
 
-            const formData =
-                new FormData();
+        loading.classList.remove("hidden");
 
-            formData.append(
-                "invoice",
-                file
-            );
+        analyzeButton.disabled = true;
+
+        statusMessage.textContent =
+            "Analyse de la facture en cours...";
 
 
-            console.log(
-                "Sending request to Flask..."
-            );
+        // Create FormData
+
+        const formData = new FormData();
+
+        formData.append(
+            "invoice",
+            fileInput.files[0]
+        );
 
 
-            try {
+        try {
 
-                // =========================
-                // SEND TO FLASK
-                // =========================
+            // Send invoice to Flask
 
-                const response =
-                    await fetch(
-                        "/upload",
-                        {
-                            method: "POST",
-                            body: formData
-                        }
-                    );
-
-
-                console.log(
-                    "Flask response:",
-                    response.status
-                );
-
-
-                // =========================
-                // READ RESPONSE
-                // =========================
-
-                const data =
-                    await response.json();
-
-
-                console.log(
-                    "Data received:",
-                    data
-                );
-
-
-                // =========================
-                // CHECK SUCCESS
-                // =========================
-
-                if (
-                    !response.ok ||
-                    !data.success
-                ) {
-
-                    throw new Error(
-                        data.message ||
-                        "Erreur pendant l'analyse."
-                    );
+            const response = await fetch(
+                "/upload",
+                {
+                    method: "POST",
+                    body: formData
                 }
+            );
 
 
-                // =========================
-                // DISPLAY OCR
-                // =========================
+            // Convert response to JSON
 
-                ocrResult.textContent =
-                    data.text ||
-                    "Aucun texte détecté.";
+            const data = await response.json();
 
+
+            console.log("Flask response:", data);
+
+
+            // =====================================
+            // SUCCESS
+            // =====================================
+
+            if (data.success) {
 
                 statusMessage.textContent =
                     "✓ Facture analysée avec succès.";
 
-
-                console.log(
-                    "OCR SUCCESS"
-                );
+                statusMessage.className =
+                    "status success";
 
 
-            } catch (error) {
+                // Display OCR text
 
-                console.error(
-                    "ERROR:",
-                    error
-                );
+                if (data.ocr_text) {
 
+                    ocrText.textContent =
+                        data.ocr_text;
+
+                } else {
+
+                    ocrText.textContent =
+                        "Aucun texte n'a été détecté.";
+                }
+
+
+                // =====================================
+                // DISPLAY EXTRACTED INFORMATION
+                // =====================================
+
+                if (data.client_name !== undefined) {
+
+                    clientName.textContent =
+                        data.client_name || "-";
+                }
+
+
+                if (data.supplier_name !== undefined) {
+
+                    supplierName.textContent =
+                        data.supplier_name || "-";
+                }
+
+
+                if (data.client_ice !== undefined) {
+
+                    clientICE.textContent =
+                        data.client_ice || "-";
+                }
+
+
+                if (data.supplier_ice !== undefined) {
+
+                    supplierICE.textContent =
+                        data.supplier_ice || "-";
+                }
+
+
+                if (data.invoice_date !== undefined) {
+
+                    invoiceDate.textContent =
+                        data.invoice_date || "-";
+                }
+
+
+                if (data.amount_ht !== undefined) {
+
+                    amountHT.textContent =
+                        data.amount_ht || "-";
+                }
+
+
+                if (data.tva !== undefined) {
+
+                    tva.textContent =
+                        data.tva || "-";
+                }
+
+
+                if (data.amount_ttc !== undefined) {
+
+                    amountTTC.textContent =
+                        data.amount_ttc || "-";
+                }
+
+
+            } else {
 
                 statusMessage.textContent =
-                    "✕ Erreur pendant l'analyse.";
+                    "Erreur : " +
+                    (data.message || "Une erreur est survenue.");
 
-
-                alert(
-                    "Une erreur est survenue :\n\n" +
-                    error.message
-                );
-
-
-            } finally {
-
-                // =========================
-                // RESTORE BUTTON
-                // =========================
-
-                analyzeButton.disabled =
-                    false;
-
-                analyzeButton.textContent =
-                    "Analyser";
+                statusMessage.className =
+                    "status error";
             }
 
+
+        } catch (error) {
+
+            console.error(
+                "JavaScript error:",
+                error
+            );
+
+            statusMessage.textContent =
+                "Une erreur est survenue : " +
+                error.message;
+
+            statusMessage.className =
+                "status error";
+
         }
-    );
+
+
+        // Hide loading
+
+        loading.classList.add("hidden");
+
+        analyzeButton.disabled = false;
+
+    });
 
 });

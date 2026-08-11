@@ -3,35 +3,50 @@ import os
 import pytesseract
 from PIL import Image
 
+
 app = Flask(__name__)
 
-# Upload folder
+# =========================
+# Configuration
+# =========================
+
 UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# Tesseract installation
+# Create uploads folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+# =========================
+# Tesseract configuration
+# =========================
+
 pytesseract.pytesseract.tesseract_cmd = (
     r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 )
 
+
+# =========================
+# Home page
+# =========================
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
+# =========================
+# Invoice upload + OCR
+# =========================
+
 @app.route("/upload", methods=["POST"])
 def upload():
 
-    print("\n========== UPLOAD ROUTE CALLED ==========")
+    print("UPLOAD ROUTE CALLED")
 
-    # Check that a file was received
+    # Check if a file was sent
     if "invoice" not in request.files:
-
-        print("ERROR: No invoice field received")
-
         return jsonify({
             "success": False,
             "message": "Aucun fichier reçu."
@@ -39,63 +54,76 @@ def upload():
 
     file = request.files["invoice"]
 
-    print("File received:", file.filename)
-
-    # Check filename
+    # Check if a file was selected
     if file.filename == "":
-
-        print("ERROR: Empty filename")
-
         return jsonify({
             "success": False,
             "message": "Aucun fichier sélectionné."
         }), 400
 
+    # =========================
+    # Save the invoice
+    # =========================
+
+    file_path = os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        file.filename
+    )
+
+    file.save(file_path)
+
+    print(f"Fichier sauvegardé : {file_path}")
+
+
+    # =========================
+    # OCR
+    # =========================
+
     try:
 
-        # Save invoice
-        file_path = os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            file.filename
-        )
-
-        file.save(file_path)
-
-        print("File saved:", file_path)
-
-        # Open image
         image = Image.open(file_path)
 
-        print("Image opened successfully")
+        print("Image ouverte avec succès.")
 
-        # OCR in French
+        # French + English OCR
         text = pytesseract.image_to_string(
             image,
-            lang="fra"
+            lang="fra+eng"
         )
 
-        print("OCR completed")
+        # =========================
+        # Display OCR text
+        # =========================
 
-        print("\n========== OCR TEXT ==========")
+        print("\n========== TEXTE OCR ==========")
         print(text)
-        print("==============================\n")
+        print("========== FIN OCR ==========\n")
 
+
+        # =========================
         # Send result to JavaScript
+        # =========================
+
         return jsonify({
             "success": True,
             "message": "Facture analysée avec succès.",
-            "text": text
+            "ocr_text": text
         })
+
 
     except Exception as e:
 
-        print("OCR ERROR:", str(e))
+        print("OCR ERROR:", e)
 
         return jsonify({
             "success": False,
-            "message": str(e)
+            "message": f"Erreur lors de l'analyse : {str(e)}"
         }), 500
 
+
+# =========================
+# Run Flask
+# =========================
 
 if __name__ == "__main__":
     app.run(debug=True)
