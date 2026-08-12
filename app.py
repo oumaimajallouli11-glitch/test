@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import os
+import re
 import pytesseract
 from PIL import Image
 
@@ -19,8 +20,7 @@ UPLOAD_FOLDER = "uploads"
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-
-# Create uploads folder if it doesn't exist
+# Create the folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
@@ -28,10 +28,100 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # TESSERACT CONFIGURATION
 # ==========================================
 
-# Windows path to Tesseract
 pytesseract.pytesseract.tesseract_cmd = (
     r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 )
+
+
+# ==========================================
+# EXTRACT INFORMATION FROM OCR TEXT
+# ==========================================
+
+def extract_invoice_data(ocr_text):
+
+    data = {
+        "date": "-",
+        "ice_client": "-",
+        "ice_fournisseur": "-",
+        "montant_ht": "-",
+        "tva": "-",
+        "montant_ttc": "-"
+    }
+
+    # --------------------------------------
+    # DATE
+    # --------------------------------------
+
+    date_match = re.search(
+        r"Date\s*:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
+        ocr_text,
+        re.IGNORECASE
+    )
+
+    if date_match:
+        data["date"] = date_match.group(1)
+
+
+    # --------------------------------------
+    # ICE
+    # --------------------------------------
+
+    ice_matches = re.findall(
+        r"ICE\s*[:\-]?\s*(\d{10,20})",
+        ocr_text,
+        re.IGNORECASE
+    )
+
+    if len(ice_matches) >= 1:
+        data["ice_fournisseur"] = ice_matches[0]
+
+    if len(ice_matches) >= 2:
+        data["ice_client"] = ice_matches[1]
+
+
+    # --------------------------------------
+    # TOTAL HT
+    # --------------------------------------
+
+    ht_match = re.search(
+        r"TOTAL\s*HT\s*[:\-]?\s*([\d\s.,]+)",
+        ocr_text,
+        re.IGNORECASE
+    )
+
+    if ht_match:
+        data["montant_ht"] = ht_match.group(1).strip()
+
+
+    # --------------------------------------
+    # TVA
+    # --------------------------------------
+
+    tva_match = re.search(
+        r"TVA(?:\s*\([^)]*\))?\s*[:\-]?\s*([\d\s.,]+)",
+        ocr_text,
+        re.IGNORECASE
+    )
+
+    if tva_match:
+        data["tva"] = tva_match.group(1).strip()
+
+
+    # --------------------------------------
+    # TOTAL TTC
+    # --------------------------------------
+
+    ttc_match = re.search(
+        r"TOTAL\s*TTC\s*[:\-]?\s*([\d\s.,]+)",
+        ocr_text,
+        re.IGNORECASE
+    )
+
+    if ttc_match:
+        data["montant_ttc"] = ttc_match.group(1).strip()
+
+
+    return data
 
 
 # ==========================================
@@ -41,11 +131,13 @@ pytesseract.pytesseract.tesseract_cmd = (
 @app.route("/")
 def home():
 
+    print("HOME ROUTE WORKS")
+
     return render_template("index.html")
 
 
 # ==========================================
-# UPLOAD + OCR
+# UPLOAD + OCR + EXTRACTION
 # ==========================================
 
 @app.route("/upload", methods=["POST"])
@@ -57,7 +149,7 @@ def upload():
 
 
     # --------------------------------------
-    # Check if file exists
+    # CHECK FILE
     # --------------------------------------
 
     if "invoice" not in request.files:
@@ -74,7 +166,7 @@ def upload():
 
 
     # --------------------------------------
-    # Check filename
+    # CHECK FILENAME
     # --------------------------------------
 
     if file.filename == "":
@@ -88,7 +180,7 @@ def upload():
 
 
     # --------------------------------------
-    # Save file
+    # SAVE FILE
     # --------------------------------------
 
     filepath = os.path.join(
@@ -97,7 +189,6 @@ def upload():
     )
 
     file.save(filepath)
-
 
     print("Fichier sauvegardé :")
     print(filepath)
@@ -117,7 +208,6 @@ def upload():
         # Open image
         image = Image.open(filepath)
 
-
         print("Image ouverte avec succès.")
         print("Format :", image.format)
         print("Taille :", image.size)
@@ -134,7 +224,7 @@ def upload():
 
 
         # ----------------------------------
-        # Print OCR result
+        # DISPLAY OCR TEXT
         # ----------------------------------
 
         print("\n================================")
@@ -149,7 +239,23 @@ def upload():
 
 
         # ==================================
-        # RESPONSE
+        # EXTRACT INVOICE INFORMATION
+        # ==================================
+
+        invoice_data = extract_invoice_data(ocr_text)
+
+
+        print("\n================================")
+        print("EXTRACTED INVOICE DATA")
+        print("================================")
+
+        print(invoice_data)
+
+        print("================================")
+
+
+        # ==================================
+        # SEND RESULT TO JAVASCRIPT
         # ==================================
 
         return jsonify({
@@ -158,10 +264,16 @@ def upload():
 
             "message": "Facture analysée avec succès.",
 
-            "ocr_text": ocr_text
+            "ocr_text": ocr_text,
+
+            "data": invoice_data
 
         })
 
+
+    # ======================================
+    # ERROR HANDLING
+    # ======================================
 
     except Exception as e:
 
@@ -170,7 +282,6 @@ def upload():
         print("================================")
 
         print(str(e))
-
 
         return jsonify({
 
@@ -182,7 +293,7 @@ def upload():
 
 
 # ==========================================
-# RUN APPLICATION
+# START FLASK
 # ==========================================
 
 if __name__ == "__main__":
