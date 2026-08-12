@@ -4,333 +4,17 @@ import re
 import pytesseract
 from PIL import Image
 
-
-# ==========================================
-# FLASK APPLICATION
-# ==========================================
-
 app = Flask(__name__)
 
-
 # ==========================================
-# UPLOAD FOLDER
+# CONFIGURATION
 # ==========================================
 
 UPLOAD_FOLDER = "uploads"
 
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-
-# ==========================================
-# TESSERACT CONFIGURATION
-# ==========================================
-
-pytesseract.pytesseract.tesseract_cmd = (
-    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-)
-
-
-# ==========================================
-# EXTRACT INVOICE INFORMATION
-# ==========================================
-
-def extract_invoice_data(ocr_text):
-
-    data = {
-
-        "client_name": "-",
-
-        "supplier_name": "-",
-
-        "date": "-",
-
-        "ice_client": "-",
-
-        "ice_fournisseur": "-",
-
-        "montant_ht": "-",
-
-        "tva": "-",
-
-        "montant_ttc": "-",
-
-        "mode_paiement": "-"
-
-    }
-
-
-    # ======================================
-    # CLEAN OCR TEXT
-    # ======================================
-
-    text = ocr_text.replace("\r", "")
-
-    lines = [
-        line.strip()
-        for line in text.split("\n")
-        if line.strip()
-    ]
-
-
-    # ======================================
-    # SUPPLIER NAME
-    # ======================================
-
-    # Example:
-    #
-    # SOCIÉTÉ EXEMPLE SARL
-    # Fournisseur
-
-    for i, line in enumerate(lines):
-
-        normalized = line.upper()
-
-        if (
-            "FOURNISSEUR" in normalized
-            and i > 0
-        ):
-
-            previous_line = lines[i - 1].strip()
-
-            if previous_line:
-
-                data["supplier_name"] = previous_line
-
-                break
-
-
-    # ======================================
-    # CLIENT NAME
-    # ======================================
-
-    # Example:
-    #
-    # Client
-    # SOCIÉTÉ CLIENTE SARL
-
-    for i, line in enumerate(lines):
-
-        normalized = line.upper()
-
-        if normalized == "CLIENT":
-
-            if i + 1 < len(lines):
-
-                next_line = lines[i + 1].strip()
-
-                if next_line:
-
-                    data["client_name"] = next_line
-
-                    break
-
-
-    # ======================================
-    # DATE
-    # ======================================
-
-    date_match = re.search(
-        r"Date\s*:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
-        text,
-        re.IGNORECASE
-    )
-
-    if date_match:
-
-        data["date"] = date_match.group(1)
-
-
-    # ======================================
-    # ICE
-    # ======================================
-
-    ice_matches = re.findall(
-        r"ICE\s*[:\-]?\s*(\d{10,20})",
-        text,
-        re.IGNORECASE
-    )
-
-
-    if len(ice_matches) >= 1:
-
-        data["ice_fournisseur"] = ice_matches[0]
-
-
-    if len(ice_matches) >= 2:
-
-        data["ice_client"] = ice_matches[1]
-
-
-    # ======================================
-    # TOTAL HT
-    # ======================================
-
-    ht_match = re.search(
-        r"TOTAL\s*HT\s*[:\-]?\s*([\d\s.,]+)",
-        text,
-        re.IGNORECASE
-    )
-
-
-    if ht_match:
-
-        data["montant_ht"] = (
-            ht_match.group(1)
-            .strip()
-        )
-
-
-    # ======================================
-    # TVA
-    # ======================================
-
-    tva_match = re.search(
-        r"TVA(?:\s*\([^)]*\))?\s*[:\-]?\s*([\d\s.,]+)",
-        text,
-        re.IGNORECASE
-    )
-
-
-    if tva_match:
-
-        data["tva"] = (
-            tva_match.group(1)
-            .strip()
-        )
-
-
-    # ======================================
-    # TOTAL TTC
-    # ======================================
-
-    # Sometimes OCR gives:
-    #
-    # TOTAL TTC
-    #
-    # 19 560,00 DH
-    #
-    # so we allow spaces/new lines between
-    # TOTAL TTC and the amount.
-
-    ttc_match = re.search(
-        r"TOTAL\s*TTC[\s:\-]*([\d\s.,]+)",
-        text,
-        re.IGNORECASE
-    )
-
-
-    if ttc_match:
-
-        amount = ttc_match.group(1).strip()
-
-        # Remove unnecessary spaces at the beginning/end
-        amount = amount.strip()
-
-        if amount:
-
-            data["montant_ttc"] = amount
-
-
-    # ======================================
-    # SECOND TTC METHOD
-    # ======================================
-
-    # If the first method doesn't work,
-    # search for "TOTAL TTC" and look at
-    # the following lines.
-
-    if data["montant_ttc"] == "-":
-
-        for i, line in enumerate(lines):
-
-            normalized = line.upper()
-
-            if "TOTAL TTC" in normalized:
-
-                # Check next few lines
-
-                for j in range(
-                    i + 1,
-                    min(i + 4, len(lines))
-                ):
-
-                    possible_amount = lines[j]
-
-                    amount_match = re.search(
-                        r"([\d\s.,]{3,})",
-                        possible_amount
-                    )
-
-                    if amount_match:
-
-                        amount = (
-                            amount_match.group(1)
-                            .strip()
-                        )
-
-                        if amount:
-
-                            data["montant_ttc"] = amount
-
-                            break
-
-
-    # ======================================
-    # MODE DE PAIEMENT
-    # ======================================
-
-    # Example:
-    #
-    # Mode de paiement: Virement bancaire
-
-    payment_match = re.search(
-        r"Mode\s*de\s*paiement\s*[:\-]?\s*(.+)",
-        text,
-        re.IGNORECASE
-    )
-
-
-    if payment_match:
-
-        payment = payment_match.group(1).strip()
-
-        if payment:
-
-            data["mode_paiement"] = payment
-
-
-    # ======================================
-    # PRINT EXTRACTED DATA
-    # ======================================
-
-    print("\n================================")
-    print("EXTRACTED INVOICE DATA")
-    print("================================")
-
-    print("Client :", data["client_name"])
-
-    print("Fournisseur :", data["supplier_name"])
-
-    print("Date :", data["date"])
-
-    print("ICE Client :", data["ice_client"])
-
-    print("ICE Fournisseur :", data["ice_fournisseur"])
-
-    print("Montant HT :", data["montant_ht"])
-
-    print("TVA :", data["tva"])
-
-    print("Montant TTC :", data["montant_ttc"])
-
-    print("Mode de paiement :", data["mode_paiement"])
-
-    print("================================")
-
-
-    return data
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
 # ==========================================
@@ -338,24 +22,516 @@ def extract_invoice_data(ocr_text):
 # ==========================================
 
 @app.route("/")
-def home():
-
-    print("HOME ROUTE WORKS")
-
+def index():
     return render_template("index.html")
 
 
 # ==========================================
-# UPLOAD + OCR
+# TEXT CLEANING
+# ==========================================
+
+def clean_text(text):
+    """
+    Clean OCR text without destroying useful information.
+    """
+
+    if not text:
+        return ""
+
+    # Normalize line breaks
+    text = text.replace("\r", "\n")
+
+    # Remove excessive spaces
+    text = re.sub(r"[ \t]+", " ", text)
+
+    # Remove excessive empty lines
+    text = re.sub(r"\n\s*\n+", "\n", text)
+
+    return text.strip()
+
+
+# ==========================================
+# FIND VALUE AFTER A LABEL
+# ==========================================
+
+def find_after_label(text, labels):
+    """
+    Search for text appearing after one of several labels.
+    """
+
+    for label in labels:
+
+        pattern = rf"{label}\s*[:\-]?\s*(.+)"
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+            value = match.group(1).strip()
+
+            # Stop at a line break
+            value = value.split("\n")[0].strip()
+
+            if value:
+                return value
+
+    return ""
+
+
+# ==========================================
+# EXTRACT INVOICE NUMBER
+# ==========================================
+
+def extract_invoice_number(text):
+
+    patterns = [
+        r"Facture\s*(?:N[°ºoO]?)?\s*[:\-]?\s*([A-Z0-9\-]+)",
+        r"FACT\s*U\s*R\s*E\s*N[°ºoO]?\s*[:\-]?\s*([A-Z0-9\-]+)",
+    ]
+
+    for pattern in patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+            return match.group(1).strip()
+
+    return ""
+
+
+# ==========================================
+# EXTRACT DATE
+# ==========================================
+
+def extract_invoice_date(text):
+
+    patterns = [
+        r"Date\s*[:\-]\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})",
+        r"Date de la facture\s*[:\-]\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})",
+    ]
+
+    for pattern in patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+            return match.group(1)
+
+    return ""
+
+
+# ==========================================
+# EXTRACT ICE NUMBERS
+# ==========================================
+
+def extract_ice_numbers(text):
+
+    # Find every 15-digit number.
+    # Moroccan ICE numbers contain 15 digits.
+
+    numbers = re.findall(r"\b\d{15}\b", text)
+
+    if len(numbers) >= 2:
+
+        return {
+            "client_ice": numbers[-1],
+            "supplier_ice": numbers[0]
+        }
+
+    if len(numbers) == 1:
+
+        return {
+            "client_ice": numbers[0],
+            "supplier_ice": ""
+        }
+
+    return {
+        "client_ice": "",
+        "supplier_ice": ""
+    }
+
+
+# ==========================================
+# EXTRACT SUPPLIER NAME
+# ==========================================
+
+def extract_supplier_name(text):
+
+    patterns = [
+        r"(SOCI[ÉE]T[ÉE]\s+EXEMPLE\s+SARL)",
+        r"(SOCIETE\s+EXEMPLE\s+SARL)",
+        r"^([A-ZÉÈÀÙÂÊÎÔÛÇ][A-ZÉÈÀÙÂÊÎÔÛÇ\s&\-]+SARL)",
+    ]
+
+    for pattern in patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE | re.MULTILINE
+        )
+
+        if match:
+
+            value = match.group(1).strip()
+
+            if len(value) > 2:
+                return value
+
+    # More general fallback:
+    lines = text.splitlines()
+
+    for line in lines[:10]:
+
+        line = line.strip()
+
+        if "SARL" in line.upper():
+
+            return line
+
+    return ""
+
+
+# ==========================================
+# EXTRACT CLIENT NAME
+# ==========================================
+
+def extract_client_name(text):
+
+    patterns = [
+        r"(SOCI[ÉE]T[ÉE]\s+CLIENTE\s+SARL)",
+        r"(SOCIETE\s+CLIENTE\s+SARL)",
+    ]
+
+    for pattern in patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+            return match.group(1).strip()
+
+    # Fallback: search around "Client"
+    match = re.search(
+        r"Client\s*\n?\s*([A-ZÉÈÀÙÂÊÎÔÛÇ][A-ZÉÈÀÙÂÊÎÔÛÇ\s]+SARL)",
+        text,
+        re.IGNORECASE
+    )
+
+    if match:
+        return match.group(1).strip()
+
+    return ""
+
+
+# ==========================================
+# EXTRACT AMOUNTS
+# ==========================================
+
+def extract_amounts(text):
+
+    result = {
+        "amount_ht": "",
+        "tva": "",
+        "amount_ttc": ""
+    }
+
+    # -----------------------------
+    # TOTAL HT
+    # -----------------------------
+
+    ht_patterns = [
+        r"TOTAL\s+HT\s*[:\-]?\s*([\d\s.,]+)",
+        r"TOTAL\s+HT\s+([\d\s.,]+)",
+    ]
+
+    for pattern in ht_patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            result["amount_ht"] = match.group(1).strip()
+
+            break
+
+    # -----------------------------
+    # TVA
+    # -----------------------------
+
+    tva_patterns = [
+        r"TVA\s*\(?\s*20\s*%\s*\)?\s*[:\-]?\s*([\d\s.,]+)",
+        r"TVA\s*[:\-]?\s*([\d\s.,]+)",
+    ]
+
+    for pattern in tva_patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            result["tva"] = match.group(1).strip()
+
+            break
+
+    # -----------------------------
+    # TOTAL TTC
+    # -----------------------------
+
+    ttc_patterns = [
+        r"TOTAL\s+TTC\s*[:\-]?\s*([\d\s.,]+)",
+        r"TOTAL\s+TTC\s+([\d\s.,]+)",
+    ]
+
+    for pattern in ttc_patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            result["amount_ttc"] = match.group(1).strip()
+
+            break
+
+    # -----------------------------
+    # FALLBACK TTC
+    # -----------------------------
+
+    if not result["amount_ttc"]:
+
+        # Sometimes OCR puts the amount at the end
+        # of the invoice.
+
+        matches = re.findall(
+            r"(\d[\d\s.,]+)\s*DH",
+            text,
+            re.IGNORECASE
+        )
+
+        if matches:
+
+            # Usually the last DH amount is TTC
+            result["amount_ttc"] = matches[-1].strip()
+
+    return result
+
+
+# ==========================================
+# EXTRACT PAYMENT INFORMATION
+# ==========================================
+
+def extract_payment_information(text):
+
+    payment = {
+        "payment_method": "",
+        "rib": "",
+        "bank": "",
+        "swift": ""
+    }
+
+    # ======================================
+    # PAYMENT METHOD
+    # ======================================
+
+    payment_patterns = [
+        r"Mode\s+de\s+paiement\s*[:\-]\s*(.+)",
+        r"Mode\s+paiement\s*[:\-]\s*(.+)",
+        r"Paiement\s*[:\-]\s*(.+)"
+    ]
+
+    for pattern in payment_patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            payment["payment_method"] = (
+                match.group(1)
+                .split("\n")[0]
+                .strip()
+            )
+
+            break
+
+    # ======================================
+    # RIB
+    # ======================================
+
+    rib_patterns = [
+        r"RIB\s*[:\-]?\s*([0-9\s]+)",
+        r"R\.I\.B\s*[:\-]?\s*([0-9\s]+)"
+    ]
+
+    for pattern in rib_patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            rib = match.group(1).strip()
+
+            # Keep numbers and spaces
+            rib = re.sub(r"[^0-9\s]", "", rib)
+
+            payment["rib"] = rib.strip()
+
+            break
+
+    # ======================================
+    # BANK
+    # ======================================
+
+    bank_patterns = [
+        r"Banque\s*[:\-]\s*(.+)",
+        r"Bank\s*[:\-]\s*(.+)"
+    ]
+
+    for pattern in bank_patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            payment["bank"] = (
+                match.group(1)
+                .split("\n")[0]
+                .strip()
+            )
+
+            break
+
+    # ======================================
+    # SWIFT
+    # ======================================
+
+    swift_patterns = [
+        r"SWIFT\s*[:\-]\s*([A-Z0-9]+)",
+        r"BIC\s*[:\-]\s*([A-Z0-9]+)"
+    ]
+
+    for pattern in swift_patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            payment["swift"] = match.group(1).strip()
+
+            break
+
+    return payment
+
+
+# ==========================================
+# EXTRACT ALL INVOICE INFORMATION
+# ==========================================
+
+def extract_invoice_data(text):
+
+    ice = extract_ice_numbers(text)
+
+    amounts = extract_amounts(text)
+
+    payment = extract_payment_information(text)
+
+    data = {
+
+        "invoice_number":
+            extract_invoice_number(text),
+
+        "supplier_name":
+            extract_supplier_name(text),
+
+        "client_name":
+            extract_client_name(text),
+
+        "supplier_ice":
+            ice["supplier_ice"],
+
+        "client_ice":
+            ice["client_ice"],
+
+        "invoice_date":
+            extract_invoice_date(text),
+
+        "amount_ht":
+            amounts["amount_ht"],
+
+        "tva":
+            amounts["tva"],
+
+        "amount_ttc":
+            amounts["amount_ttc"],
+
+        # PAYMENT INFORMATION
+        "payment_method":
+            payment["payment_method"],
+
+        "rib":
+            payment["rib"],
+
+        "bank":
+            payment["bank"],
+
+        "swift":
+            payment["swift"]
+    }
+
+    return data
+
+
+# ==========================================
+# UPLOAD + OCR ROUTE
 # ==========================================
 
 @app.route("/upload", methods=["POST"])
 def upload():
 
-    print("\n================================")
+    print("\n====================================")
     print("UPLOAD ROUTE CALLED")
-    print("================================")
-
+    print("====================================")
 
     # ======================================
     # CHECK FILE
@@ -363,30 +539,19 @@ def upload():
 
     if "invoice" not in request.files:
 
-        print("ERROR: No invoice file received.")
-
         return jsonify({
             "success": False,
             "message": "Aucun fichier reçu."
         })
 
-
     file = request.files["invoice"]
 
-
-    # ======================================
-    # CHECK FILENAME
-    # ======================================
-
     if file.filename == "":
-
-        print("ERROR: Empty filename.")
 
         return jsonify({
             "success": False,
             "message": "Aucun fichier sélectionné."
         })
-
 
     # ======================================
     # SAVE FILE
@@ -399,31 +564,24 @@ def upload():
 
     file.save(filepath)
 
-
     print("Fichier sauvegardé :")
     print(filepath)
-
 
     # ======================================
     # START OCR
     # ======================================
 
+    print("\n====================================")
+    print("STARTING OCR")
+    print("====================================")
+
     try:
-
-        print("\n================================")
-        print("STARTING OCR")
-        print("================================")
-
 
         image = Image.open(filepath)
 
-
         print("Image ouverte avec succès.")
-
         print("Format :", image.format)
-
         print("Taille :", image.size)
-
 
         # ==================================
         # OCR
@@ -434,33 +592,64 @@ def upload():
             lang="fra+eng"
         )
 
+        ocr_text = clean_text(ocr_text)
 
-        # ==================================
-        # DISPLAY OCR TEXT
-        # ==================================
-
-        print("\n================================")
+        print("\n====================================")
         print("OCR TEXT")
-        print("================================")
+        print("====================================")
 
         print(ocr_text)
 
-        print("================================")
-        print("END OCR TEXT")
-        print("================================")
-
-
         # ==================================
-        # EXTRACT DATA
+        # EXTRACT INFORMATION
         # ==================================
+
+        print("\n====================================")
+        print("EXTRACTED INVOICE DATA")
+        print("====================================")
 
         invoice_data = extract_invoice_data(
             ocr_text
         )
 
+        # ==================================
+        # PRINT EXTRACTED DATA
+        # ==================================
+
+        for key, value in invoice_data.items():
+
+            print(
+                f"{key}: {value}"
+            )
+
+        print("\n====================================")
+        print("PAYMENT INFORMATION")
+        print("====================================")
+
+        print(
+            "Mode de paiement:",
+            invoice_data["payment_method"]
+        )
+
+        print(
+            "RIB:",
+            invoice_data["rib"]
+        )
+
+        print(
+            "Banque:",
+            invoice_data["bank"]
+        )
+
+        print(
+            "SWIFT:",
+            invoice_data["swift"]
+        )
+
+        print("====================================\n")
 
         # ==================================
-        # RETURN JSON
+        # RETURN DATA TO JAVASCRIPT
         # ==================================
 
         return jsonify({
@@ -473,35 +662,77 @@ def upload():
             "ocr_text":
                 ocr_text,
 
-            "data":
-                invoice_data
+            # Invoice data
+            "invoice_number":
+                invoice_data["invoice_number"],
 
+            "client_name":
+                invoice_data["client_name"],
+
+            "supplier_name":
+                invoice_data["supplier_name"],
+
+            "client_ice":
+                invoice_data["client_ice"],
+
+            "supplier_ice":
+                invoice_data["supplier_ice"],
+
+            "invoice_date":
+                invoice_data["invoice_date"],
+
+            "amount_ht":
+                invoice_data["amount_ht"],
+
+            "tva":
+                invoice_data["tva"],
+
+            "amount_ttc":
+                invoice_data["amount_ttc"],
+
+            # Payment data
+            "payment_method":
+                invoice_data["payment_method"],
+
+            "rib":
+                invoice_data["rib"],
+
+            "bank":
+                invoice_data["bank"],
+
+            "swift":
+                invoice_data["swift"]
         })
 
+    # ======================================
+    # ERROR
+    # ======================================
 
     except Exception as e:
 
-        print("\n================================")
-        print("OCR ERROR")
-        print("================================")
+        print("\n====================================")
+        print("ERROR")
+        print("====================================")
 
         print(str(e))
-
 
         return jsonify({
 
             "success": False,
 
             "message":
-                f"Erreur OCR : {str(e)}"
+                str(e)
 
         })
 
 
 # ==========================================
-# START APPLICATION
+# RUN APPLICATION
 # ==========================================
 
 if __name__ == "__main__":
 
-    app.run(debug=True)
+    app.run(
+        debug=True,
+        port=5000
+    )

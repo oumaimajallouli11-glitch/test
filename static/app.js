@@ -23,7 +23,12 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("ocrText");
 
 
-    // Invoice information elements
+    // =====================================
+    // INVOICE INFORMATION ELEMENTS
+    // =====================================
+
+    const invoiceNumber =
+        document.getElementById("invoiceNumber");
 
     const clientName =
         document.getElementById("clientName");
@@ -51,14 +56,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================
-    // CHECK THAT IMPORTANT ELEMENTS EXIST
+    // PAYMENT INFORMATION ELEMENTS
     // =====================================
 
-    console.log("JavaScript loaded.");
+    const paymentMethod =
+        document.getElementById("paymentMethod");
 
+    const rib =
+        document.getElementById("rib");
+
+    const bank =
+        document.getElementById("bank");
+
+    const swift =
+        document.getElementById("swift");
+
+
+    // =====================================
+    // DEBUG
+    // =====================================
+
+    console.log("=================================");
+    console.log("JavaScript loaded successfully.");
     console.log("Form:", form);
     console.log("File input:", fileInput);
     console.log("Analyze button:", analyzeButton);
+    console.log("=================================");
 
 
     // =====================================
@@ -73,8 +96,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (fileInput.files.length > 0) {
 
-                    fileName.textContent =
-                        fileInput.files[0].name;
+                    if (fileName) {
+
+                        fileName.textContent =
+                            fileInput.files[0].name;
+                    }
 
                     console.log(
                         "File selected:",
@@ -83,8 +109,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 } else {
 
-                    fileName.textContent =
-                        "Aucun fichier sélectionné";
+                    if (fileName) {
+
+                        fileName.textContent =
+                            "Aucun fichier sélectionné";
+                    }
+
                 }
 
             }
@@ -104,7 +134,6 @@ document.addEventListener("DOMContentLoaded", function () {
             async function (event) {
 
                 event.preventDefault();
-
 
                 console.log(
                     "Analyze button clicked."
@@ -142,12 +171,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     loading.classList.remove("hidden");
                 }
 
-
                 if (analyzeButton) {
 
                     analyzeButton.disabled = true;
                 }
-
 
                 if (statusMessage) {
 
@@ -220,8 +247,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                     console.log(
+                        "================================="
+                    );
+
+                    console.log(
                         "Flask response:",
                         data
+                    );
+
+                    console.log(
+                        "================================="
                     );
 
 
@@ -230,7 +265,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     // =================================
 
                     if (data.success) {
-
 
                         // -----------------------------
                         // SUCCESS MESSAGE
@@ -267,120 +301,232 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                         // =================================
-                        // DISPLAY EXTRACTED DATA
+                        // DISPLAY INVOICE DATA
                         // =================================
 
-                        if (data.data) {
+                        console.log(
+                            "Displaying extracted invoice data..."
+                        );
 
 
-                            const invoice =
-                                data.data;
+                        // -----------------------------
+                        // INVOICE NUMBER
+                        // -----------------------------
 
+                        if (invoiceNumber) {
 
-                            console.log(
-                                "Extracted invoice data:",
-                                invoice
-                            );
-
-
-                            // -----------------------------
-                            // DATE
-                            // -----------------------------
-
-                            if (invoiceDate) {
-
-                                invoiceDate.textContent =
-                                    invoice.date || "-";
-                            }
-
-
-                            // -----------------------------
-                            // ICE CLIENT
-                            // -----------------------------
-
-                            if (clientICE) {
-
-                                clientICE.textContent =
-                                    invoice.ice_client || "-";
-                            }
-
-
-                            // -----------------------------
-                            // ICE FOURNISSEUR
-                            // -----------------------------
-
-                            if (supplierICE) {
-
-                                supplierICE.textContent =
-                                    invoice.ice_fournisseur || "-";
-                            }
-
-
-                            // -----------------------------
-                            // MONTANT HT
-                            // -----------------------------
-
-                            if (amountHT) {
-
-                                amountHT.textContent =
-                                    invoice.montant_ht || "-";
-                            }
-
-
-                            // -----------------------------
-                            // TVA
-                            // -----------------------------
-
-                            if (tva) {
-
-                                tva.textContent =
-                                    invoice.tva || "-";
-                            }
-
-
-                            // -----------------------------
-                            // MONTANT TTC
-                            // -----------------------------
-
-                            if (amountTTC) {
-
-                                amountTTC.textContent =
-                                    invoice.montant_ttc || "-";
-                            }
-
-
-                            // -----------------------------
-// CLIENT NAME
-// -----------------------------
-
-if (clientName) {
-
-    clientName.textContent =
-        invoice.client_name || "-";
-}
-
-
-// -----------------------------
-// SUPPLIER NAME
-// -----------------------------
-
-if (supplierName) {
-
-    supplierName.textContent =
-        invoice.supplier_name || "-";
-}
-
-                        } else {
-
-                            console.warn(
-                                "No extracted invoice data received."
-                            );
-
+                            invoiceNumber.textContent =
+                                data.invoice_number || "-";
                         }
 
 
-                    } else {
+                        // -----------------------------
+                        // CLIENT NAME
+                        // -----------------------------
 
+                        if (clientName) {
+
+                            clientName.textContent =
+                                data.client_name || "-";
+                        }
+
+
+                        // -----------------------------
+                        // SUPPLIER NAME
+                        // -----------------------------
+
+                        if (supplierName) {
+
+                            supplierName.textContent =
+                                data.supplier_name || "-";
+                        }
+
+
+                        // -----------------------------
+                        // CLIENT ICE
+                        // -----------------------------
+
+                        if (clientICE) {
+
+                            clientICE.textContent =
+                                data.client_ice || "-";
+                        }
+
+
+                        // -----------------------------
+                        // SUPPLIER ICE
+                        // -----------------------------
+
+                        if (supplierICE) {
+
+                            supplierICE.textContent =
+                                data.supplier_ice || "-";
+                        }
+
+
+                        // -----------------------------
+                        // INVOICE DATE
+                        // -----------------------------
+
+                        if (invoiceDate) {
+
+                            invoiceDate.textContent =
+                                data.invoice_date || "-";
+                        }
+
+
+                        // -----------------------------
+                        // AMOUNT HT
+                        // -----------------------------
+
+                        if (amountHT) {
+
+                            amountHT.textContent =
+                                data.amount_ht || "-";
+                        }
+
+
+                        // -----------------------------
+                        // TVA
+                        // -----------------------------
+
+                        if (tva) {
+
+                            tva.textContent =
+                                data.tva || "-";
+                        }
+
+
+                        // -----------------------------
+                        // AMOUNT TTC
+                        // -----------------------------
+
+                        if (amountTTC) {
+
+                            amountTTC.textContent =
+                                data.amount_ttc || "-";
+                        }
+
+
+                        // =================================
+                        // PAYMENT INFORMATION
+                        // =================================
+
+                        console.log(
+                            "Displaying payment information..."
+                        );
+
+
+                        // -----------------------------
+                        // PAYMENT METHOD
+                        // -----------------------------
+
+                        if (paymentMethod) {
+
+                            paymentMethod.textContent =
+                                data.payment_method || "-";
+                        }
+
+
+                        // -----------------------------
+                        // RIB
+                        // -----------------------------
+
+                        if (rib) {
+
+                            rib.textContent =
+                                data.rib || "-";
+                        }
+
+
+                        // -----------------------------
+                        // BANK
+                        // -----------------------------
+
+                        if (bank) {
+
+                            bank.textContent =
+                                data.bank || "-";
+                        }
+
+
+                        // -----------------------------
+                        // SWIFT
+                        // -----------------------------
+
+                        if (swift) {
+
+                            swift.textContent =
+                                data.swift || "-";
+                        }
+
+
+                        // =================================
+                        // DEBUG EXTRACTED DATA
+                        // =================================
+
+                        console.log(
+                            "Client:",
+                            data.client_name
+                        );
+
+                        console.log(
+                            "Supplier:",
+                            data.supplier_name
+                        );
+
+                        console.log(
+                            "Client ICE:",
+                            data.client_ice
+                        );
+
+                        console.log(
+                            "Supplier ICE:",
+                            data.supplier_ice
+                        );
+
+                        console.log(
+                            "Date:",
+                            data.invoice_date
+                        );
+
+                        console.log(
+                            "HT:",
+                            data.amount_ht
+                        );
+
+                        console.log(
+                            "TVA:",
+                            data.tva
+                        );
+
+                        console.log(
+                            "TTC:",
+                            data.amount_ttc
+                        );
+
+                        console.log(
+                            "Payment:",
+                            data.payment_method
+                        );
+
+                        console.log(
+                            "RIB:",
+                            data.rib
+                        );
+
+                        console.log(
+                            "Bank:",
+                            data.bank
+                        );
+
+                        console.log(
+                            "SWIFT:",
+                            data.swift
+                        );
+
+
+                    } else {
 
                         // =================================
                         // SERVER ERROR
@@ -403,7 +549,6 @@ if (supplierName) {
 
 
                 } catch (error) {
-
 
                     // =================================
                     // JAVASCRIPT / NETWORK ERROR
