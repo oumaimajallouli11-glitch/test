@@ -1,231 +1,461 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+    // =====================================
+    // GET HTML ELEMENTS
+    // =====================================
+
     const form = document.getElementById("invoiceForm");
+
     const fileInput = document.getElementById("invoice");
+
     const fileName = document.getElementById("fileName");
 
-    const analyzeButton = document.getElementById("analyzeButton");
+    const analyzeButton =
+        document.getElementById("analyzeButton");
 
-    const loading = document.getElementById("loading");
-    const statusMessage = document.getElementById("statusMessage");
+    const loading =
+        document.getElementById("loading");
 
-    const ocrText = document.getElementById("ocrText");
+    const statusMessage =
+        document.getElementById("statusMessage");
 
-    const clientName = document.getElementById("clientName");
-    const supplierName = document.getElementById("supplierName");
+    const ocrText =
+        document.getElementById("ocrText");
 
-    const clientICE = document.getElementById("clientICE");
-    const supplierICE = document.getElementById("supplierICE");
 
-    const invoiceDate = document.getElementById("invoiceDate");
+    // Invoice information elements
 
-    const amountHT = document.getElementById("amountHT");
-    const tva = document.getElementById("tva");
-    const amountTTC = document.getElementById("amountTTC");
+    const clientName =
+        document.getElementById("clientName");
+
+    const supplierName =
+        document.getElementById("supplierName");
+
+    const clientICE =
+        document.getElementById("clientICE");
+
+    const supplierICE =
+        document.getElementById("supplierICE");
+
+    const invoiceDate =
+        document.getElementById("invoiceDate");
+
+    const amountHT =
+        document.getElementById("amountHT");
+
+    const tva =
+        document.getElementById("tva");
+
+    const amountTTC =
+        document.getElementById("amountTTC");
+
+
+    // =====================================
+    // CHECK THAT IMPORTANT ELEMENTS EXIST
+    // =====================================
+
+    console.log("JavaScript loaded.");
+
+    console.log("Form:", form);
+    console.log("File input:", fileInput);
+    console.log("Analyze button:", analyzeButton);
 
 
     // =====================================
     // SELECT FILE
     // =====================================
 
-    fileInput.addEventListener("change", function () {
+    if (fileInput) {
 
-        if (fileInput.files.length > 0) {
+        fileInput.addEventListener(
+            "change",
+            function () {
 
-            fileName.textContent =
-                fileInput.files[0].name;
+                if (fileInput.files.length > 0) {
 
-        } else {
+                    fileName.textContent =
+                        fileInput.files[0].name;
 
-            fileName.textContent =
-                "Aucun fichier sélectionné";
-        }
+                    console.log(
+                        "File selected:",
+                        fileInput.files[0].name
+                    );
 
-    });
+                } else {
+
+                    fileName.textContent =
+                        "Aucun fichier sélectionné";
+                }
+
+            }
+        );
+
+    }
 
 
     // =====================================
     // FORM SUBMISSION
     // =====================================
 
-    form.addEventListener("submit", async function (event) {
+    if (form) {
 
-        event.preventDefault();
+        form.addEventListener(
+            "submit",
+            async function (event) {
 
-
-        // Check file
-
-        if (fileInput.files.length === 0) {
-
-            statusMessage.textContent =
-                "Veuillez sélectionner une facture.";
-
-            return;
-        }
+                event.preventDefault();
 
 
-        // Show loading
-
-        loading.classList.remove("hidden");
-
-        analyzeButton.disabled = true;
-
-        statusMessage.textContent =
-            "Analyse de la facture en cours...";
+                console.log(
+                    "Analyze button clicked."
+                );
 
 
-        // Create FormData
+                // =================================
+                // CHECK FILE
+                // =================================
 
-        const formData = new FormData();
+                if (
+                    !fileInput ||
+                    fileInput.files.length === 0
+                ) {
 
-        formData.append(
-            "invoice",
-            fileInput.files[0]
+                    if (statusMessage) {
+
+                        statusMessage.textContent =
+                            "Veuillez sélectionner une facture.";
+
+                        statusMessage.className =
+                            "status error";
+                    }
+
+                    return;
+                }
+
+
+                // =================================
+                // SHOW LOADING
+                // =================================
+
+                if (loading) {
+
+                    loading.classList.remove("hidden");
+                }
+
+
+                if (analyzeButton) {
+
+                    analyzeButton.disabled = true;
+                }
+
+
+                if (statusMessage) {
+
+                    statusMessage.textContent =
+                        "Analyse de la facture en cours...";
+
+                    statusMessage.className =
+                        "status";
+                }
+
+
+                // =================================
+                // CREATE FORM DATA
+                // =================================
+
+                const formData = new FormData();
+
+                formData.append(
+                    "invoice",
+                    fileInput.files[0]
+                );
+
+
+                // =================================
+                // SEND TO FLASK
+                // =================================
+
+                try {
+
+                    console.log(
+                        "Sending invoice to Flask..."
+                    );
+
+
+                    const response =
+                        await fetch(
+                            "/upload",
+                            {
+                                method: "POST",
+                                body: formData
+                            }
+                        );
+
+
+                    console.log(
+                        "Response status:",
+                        response.status
+                    );
+
+
+                    // =================================
+                    // CHECK RESPONSE
+                    // =================================
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Erreur serveur : " +
+                            response.status
+                        );
+                    }
+
+
+                    // =================================
+                    // CONVERT RESPONSE TO JSON
+                    // =================================
+
+                    const data =
+                        await response.json();
+
+
+                    console.log(
+                        "Flask response:",
+                        data
+                    );
+
+
+                    // =================================
+                    // SUCCESS
+                    // =================================
+
+                    if (data.success) {
+
+
+                        // -----------------------------
+                        // SUCCESS MESSAGE
+                        // -----------------------------
+
+                        if (statusMessage) {
+
+                            statusMessage.textContent =
+                                "✓ Facture analysée avec succès.";
+
+                            statusMessage.className =
+                                "status success";
+                        }
+
+
+                        // -----------------------------
+                        // DISPLAY OCR TEXT
+                        // -----------------------------
+
+                        if (ocrText) {
+
+                            if (data.ocr_text) {
+
+                                ocrText.textContent =
+                                    data.ocr_text;
+
+                            } else {
+
+                                ocrText.textContent =
+                                    "Aucun texte n'a été détecté.";
+                            }
+
+                        }
+
+
+                        // =================================
+                        // DISPLAY EXTRACTED DATA
+                        // =================================
+
+                        if (data.data) {
+
+
+                            const invoice =
+                                data.data;
+
+
+                            console.log(
+                                "Extracted invoice data:",
+                                invoice
+                            );
+
+
+                            // -----------------------------
+                            // DATE
+                            // -----------------------------
+
+                            if (invoiceDate) {
+
+                                invoiceDate.textContent =
+                                    invoice.date || "-";
+                            }
+
+
+                            // -----------------------------
+                            // ICE CLIENT
+                            // -----------------------------
+
+                            if (clientICE) {
+
+                                clientICE.textContent =
+                                    invoice.ice_client || "-";
+                            }
+
+
+                            // -----------------------------
+                            // ICE FOURNISSEUR
+                            // -----------------------------
+
+                            if (supplierICE) {
+
+                                supplierICE.textContent =
+                                    invoice.ice_fournisseur || "-";
+                            }
+
+
+                            // -----------------------------
+                            // MONTANT HT
+                            // -----------------------------
+
+                            if (amountHT) {
+
+                                amountHT.textContent =
+                                    invoice.montant_ht || "-";
+                            }
+
+
+                            // -----------------------------
+                            // TVA
+                            // -----------------------------
+
+                            if (tva) {
+
+                                tva.textContent =
+                                    invoice.tva || "-";
+                            }
+
+
+                            // -----------------------------
+                            // MONTANT TTC
+                            // -----------------------------
+
+                            if (amountTTC) {
+
+                                amountTTC.textContent =
+                                    invoice.montant_ttc || "-";
+                            }
+
+
+                            // -----------------------------
+// CLIENT NAME
+// -----------------------------
+
+if (clientName) {
+
+    clientName.textContent =
+        invoice.client_name || "-";
+}
+
+
+// -----------------------------
+// SUPPLIER NAME
+// -----------------------------
+
+if (supplierName) {
+
+    supplierName.textContent =
+        invoice.supplier_name || "-";
+}
+
+                        } else {
+
+                            console.warn(
+                                "No extracted invoice data received."
+                            );
+
+                        }
+
+
+                    } else {
+
+
+                        // =================================
+                        // SERVER ERROR
+                        // =================================
+
+                        if (statusMessage) {
+
+                            statusMessage.textContent =
+                                "Erreur : " +
+                                (
+                                    data.message ||
+                                    "Une erreur est survenue."
+                                );
+
+                            statusMessage.className =
+                                "status error";
+                        }
+
+                    }
+
+
+                } catch (error) {
+
+
+                    // =================================
+                    // JAVASCRIPT / NETWORK ERROR
+                    // =================================
+
+                    console.error(
+                        "JavaScript error:",
+                        error
+                    );
+
+
+                    if (statusMessage) {
+
+                        statusMessage.textContent =
+                            "Une erreur est survenue : " +
+                            error.message;
+
+                        statusMessage.className =
+                            "status error";
+                    }
+
+                }
+
+
+                // =================================
+                // HIDE LOADING
+                // =================================
+
+                if (loading) {
+
+                    loading.classList.add("hidden");
+                }
+
+
+                // =================================
+                // ENABLE BUTTON AGAIN
+                // =================================
+
+                if (analyzeButton) {
+
+                    analyzeButton.disabled = false;
+                }
+
+            }
         );
 
+    } else {
 
-        try {
+        console.error(
+            "ERROR: invoiceForm was not found."
+        );
 
-            // Send invoice to Flask
-
-            const response = await fetch(
-                "/upload",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
-
-
-            // Convert response to JSON
-
-            const data = await response.json();
-
-
-            console.log("Flask response:", data);
-
-
-            // =====================================
-            // SUCCESS
-            // =====================================
-
-            if (data.success) {
-
-                statusMessage.textContent =
-                    "✓ Facture analysée avec succès.";
-
-                statusMessage.className =
-                    "status success";
-
-
-                // Display OCR text
-
-                if (data.ocr_text) {
-
-                    ocrText.textContent =
-                        data.ocr_text;
-
-                } else {
-
-                    ocrText.textContent =
-                        "Aucun texte n'a été détecté.";
-                }
-
-
-                // =====================================
-                // DISPLAY EXTRACTED INFORMATION
-                // =====================================
-
-                if (data.client_name !== undefined) {
-
-                    clientName.textContent =
-                        data.client_name || "-";
-                }
-
-
-                if (data.supplier_name !== undefined) {
-
-                    supplierName.textContent =
-                        data.supplier_name || "-";
-                }
-
-
-                if (data.client_ice !== undefined) {
-
-                    clientICE.textContent =
-                        data.client_ice || "-";
-                }
-
-
-                if (data.supplier_ice !== undefined) {
-
-                    supplierICE.textContent =
-                        data.supplier_ice || "-";
-                }
-
-
-                if (data.invoice_date !== undefined) {
-
-                    invoiceDate.textContent =
-                        data.invoice_date || "-";
-                }
-
-
-                if (data.amount_ht !== undefined) {
-
-                    amountHT.textContent =
-                        data.amount_ht || "-";
-                }
-
-
-                if (data.tva !== undefined) {
-
-                    tva.textContent =
-                        data.tva || "-";
-                }
-
-
-                if (data.amount_ttc !== undefined) {
-
-                    amountTTC.textContent =
-                        data.amount_ttc || "-";
-                }
-
-
-            } else {
-
-                statusMessage.textContent =
-                    "Erreur : " +
-                    (data.message || "Une erreur est survenue.");
-
-                statusMessage.className =
-                    "status error";
-            }
-
-
-        } catch (error) {
-
-            console.error(
-                "JavaScript error:",
-                error
-            );
-
-            statusMessage.textContent =
-                "Une erreur est survenue : " +
-                error.message;
-
-            statusMessage.className =
-                "status error";
-
-        }
-
-
-        // Hide loading
-
-        loading.classList.add("hidden");
-
-        analyzeButton.disabled = false;
-
-    });
+    }
 
 });
