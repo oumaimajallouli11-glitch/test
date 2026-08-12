@@ -4,126 +4,187 @@ import pytesseract
 from PIL import Image
 
 
+# ==========================================
+# FLASK APPLICATION
+# ==========================================
+
 app = Flask(__name__)
 
-# =========================
-# Configuration
-# =========================
+
+# ==========================================
+# UPLOAD FOLDER
+# ==========================================
 
 UPLOAD_FOLDER = "uploads"
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+
 # Create uploads folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-# =========================
-# Tesseract configuration
-# =========================
+# ==========================================
+# TESSERACT CONFIGURATION
+# ==========================================
 
+# Windows path to Tesseract
 pytesseract.pytesseract.tesseract_cmd = (
     r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 )
 
 
-# =========================
-# Home page
-# =========================
+# ==========================================
+# HOME PAGE
+# ==========================================
 
 @app.route("/")
 def home():
+
     return render_template("index.html")
 
 
-# =========================
-# Invoice upload + OCR
-# =========================
+# ==========================================
+# UPLOAD + OCR
+# ==========================================
 
 @app.route("/upload", methods=["POST"])
 def upload():
 
+    print("\n================================")
     print("UPLOAD ROUTE CALLED")
+    print("================================")
 
-    # Check if a file was sent
+
+    # --------------------------------------
+    # Check if file exists
+    # --------------------------------------
+
     if "invoice" not in request.files:
+
+        print("ERROR: No invoice file received.")
+
         return jsonify({
             "success": False,
             "message": "Aucun fichier reçu."
-        }), 400
+        })
+
 
     file = request.files["invoice"]
 
-    # Check if a file was selected
+
+    # --------------------------------------
+    # Check filename
+    # --------------------------------------
+
     if file.filename == "":
+
+        print("ERROR: Empty filename.")
+
         return jsonify({
             "success": False,
             "message": "Aucun fichier sélectionné."
-        }), 400
+        })
 
-    # =========================
-    # Save the invoice
-    # =========================
 
-    file_path = os.path.join(
+    # --------------------------------------
+    # Save file
+    # --------------------------------------
+
+    filepath = os.path.join(
         app.config["UPLOAD_FOLDER"],
         file.filename
     )
 
-    file.save(file_path)
-
-    print(f"Fichier sauvegardé : {file_path}")
+    file.save(filepath)
 
 
-    # =========================
+    print("Fichier sauvegardé :")
+    print(filepath)
+
+
+    # ======================================
     # OCR
-    # =========================
+    # ======================================
 
     try:
 
-        image = Image.open(file_path)
+        print("\n================================")
+        print("STARTING OCR")
+        print("================================")
+
+
+        # Open image
+        image = Image.open(filepath)
+
 
         print("Image ouverte avec succès.")
+        print("Format :", image.format)
+        print("Taille :", image.size)
 
-        # French + English OCR
-        text = pytesseract.image_to_string(
+
+        # ----------------------------------
+        # OCR
+        # ----------------------------------
+
+        ocr_text = pytesseract.image_to_string(
             image,
             lang="fra+eng"
         )
 
-        # =========================
-        # Display OCR text
-        # =========================
 
-        print("\n========== TEXTE OCR ==========")
-        print(text)
-        print("========== FIN OCR ==========\n")
+        # ----------------------------------
+        # Print OCR result
+        # ----------------------------------
+
+        print("\n================================")
+        print("OCR TEXT")
+        print("================================")
+
+        print(ocr_text)
+
+        print("================================")
+        print("END OCR TEXT")
+        print("================================")
 
 
-        # =========================
-        # Send result to JavaScript
-        # =========================
+        # ==================================
+        # RESPONSE
+        # ==================================
 
         return jsonify({
+
             "success": True,
+
             "message": "Facture analysée avec succès.",
-            "ocr_text": text
+
+            "ocr_text": ocr_text
+
         })
 
 
     except Exception as e:
 
-        print("OCR ERROR:", e)
+        print("\n================================")
+        print("OCR ERROR")
+        print("================================")
+
+        print(str(e))
+
 
         return jsonify({
+
             "success": False,
-            "message": f"Erreur lors de l'analyse : {str(e)}"
-        }), 500
+
+            "message": f"Erreur OCR : {str(e)}"
+
+        })
 
 
-# =========================
-# Run Flask
-# =========================
+# ==========================================
+# RUN APPLICATION
+# ==========================================
 
 if __name__ == "__main__":
+
     app.run(debug=True)
