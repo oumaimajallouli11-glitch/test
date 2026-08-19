@@ -308,7 +308,7 @@ Le projet peut être amélioré par l'ajout de fonctionnalités telles que :
 
 **Projet :** `project_facture_ia`
 **Auteur :** `<Jallouli / oumaima>`
-**Date :** `<Date>`
+**Date :** `<2026/08/19>`
 
 ## Licence
 
