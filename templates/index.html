@@ -1,34 +1,608 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 
 <head>
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>Invoice AI - Analyseur de factures</title>
+    <title>
+        Invoice AI
+    </title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+
+        /* ==================================================
+           RESET
+           ================================================== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        /* ==================================================
+           BODY
+           ================================================== */
+
+        body {
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background: #f4f6fc;
+
+            color: #29283d;
+
+            min-height: 100vh;
+        }
+
+
+        /* ==================================================
+           HEADER
+           ================================================== */
+
+        .header {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #5b4bdb,
+                    #7653e8
+                );
+
+            color: white;
+
+            text-align: center;
+
+            padding:
+                22px 20px
+                70px;
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            margin-bottom: 20px;
+        }
+
+
+        .brand-icon {
+
+            width: 32px;
+
+            height: 32px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                rgba(255,255,255,0.18);
+
+            border-radius: 9px;
+        }
+
+
+        .header h1 {
+
+            font-size: 29px;
+
+            line-height: 1.25;
+
+            margin-bottom: 10px;
+        }
+
+
+        .header p {
+
+            max-width: 650px;
+
+            margin: auto;
+
+            font-size: 14px;
+
+            line-height: 1.6;
+
+            color:
+                rgba(255,255,255,0.93);
+        }
+
+
+        /* ==================================================
+           MAIN CONTAINER
+           ================================================== */
+
+        .container {
+
+            width: 92%;
+
+            max-width: 900px;
+
+            margin:
+                -40px auto
+                45px;
+        }
+
+
+        /* ==================================================
+           CARD
+           ================================================== */
+
+        .card {
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 24px;
+
+            margin-bottom: 18px;
+
+            box-shadow:
+                0 8px 25px
+                rgba(44,55,90,0.08);
+        }
+
+
+        /* ==================================================
+           SECTION HEADER
+           ================================================== */
+
+        .section-header {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .section-icon {
+
+            width: 34px;
+
+            height: 34px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #eeeaff;
+
+            border-radius: 9px;
+        }
+
+
+        .section-title {
+
+            font-size: 18px;
+
+            font-weight: bold;
+        }
+
+
+        .section-subtitle {
+
+            font-size: 11px;
+
+            color: #88889b;
+
+            margin-top: 3px;
+        }
+
+
+        /* ==================================================
+           UPLOAD AREA
+           ================================================== */
+
+        .upload-area {
+
+            display: block;
+
+            width: 100%;
+
+            border:
+                1.5px dashed #c8c3e8;
+
+            background: #faf9ff;
+
+            border-radius: 14px;
+
+            padding: 40px 20px;
+
+            text-align: center;
+
+            cursor: pointer;
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+
+        .upload-area:hover {
+
+            background: #f7f5ff;
+
+            border-color: #6651db;
+        }
+
+
+        .upload-area.dragover {
+
+            background: #f0edff;
+
+            border-color: #6651db;
+        }
+
+
+        .upload-icon {
+
+            font-size: 42px;
+
+            line-height: 1;
+
+            margin-bottom: 12px;
+        }
+
+
+        .upload-title {
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            margin-bottom: 6px;
+        }
+
+
+        .upload-subtitle {
+
+            font-size: 11px;
+
+            color: #9292a5;
+
+            margin-bottom: 17px;
+        }
+
+
+        .file-input {
+
+            display: none;
+        }
+
+
+        .choose-button {
+
+            display: inline-block;
+
+            background: #6651db;
+
+            color: white;
+
+            padding:
+                10px 18px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            font-weight: bold;
+        }
+
+
+        .file-name {
+
+            margin-top: 13px;
+
+            color: #77778b;
+
+            font-size: 11px;
+
+            min-height: 14px;
+        }
+
+
+        /* ==================================================
+           BUTTONS
+           ================================================== */
+
+        .buttons {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-top: 14px;
+        }
+
+
+        button {
+
+            border: none;
+
+            border-radius: 8px;
+
+            padding: 12px;
+
+            font-size: 13px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            width: 100%;
+
+            transition:
+                background 0.2s ease,
+                opacity 0.2s ease;
+        }
+
+
+        button:disabled {
+
+            opacity: 0.65;
+
+            cursor: not-allowed;
+        }
+
+
+        .analyze-button {
+
+            background: #6651db;
+
+            color: white;
+        }
+
+
+        .analyze-button:hover:not(:disabled) {
+
+            background: #5541ca;
+        }
+
+
+        .new-button {
+
+            display: none;
+
+            background: #eeeaff;
+
+            color: #5b48c9;
+        }
+
+
+        .new-button:hover {
+
+            background: #e3defd;
+        }
+
+
+        /* ==================================================
+           STATUS
+           ================================================== */
+
+        .status {
+
+            text-align: center;
+
+            font-size: 12px;
+
+            margin-top: 10px;
+
+            min-height: 18px;
+
+            font-weight: bold;
+        }
+
+
+        .status.success {
+
+            color: #2e8756;
+        }
+
+
+        .status.error {
+
+            color: #c43e4b;
+        }
+
+
+        .status.loading {
+
+            color: #6651db;
+        }
+
+
+        /* ==================================================
+           RESULTS
+           ================================================== */
+
+        #results {
+
+            display: none;
+        }
+
+
+        .results-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 10px;
+        }
+
+
+        .result-field {
+
+            min-height: 76px;
+
+            padding: 14px;
+
+            background: white;
+
+            border:
+                1px solid #e9e8f0;
+
+            border-radius: 10px;
+        }
+
+
+        .result-field.highlight {
+
+            background: #f7f5ff;
+
+            border-color: #ded8fb;
+        }
+
+
+        .label {
+
+            font-size: 10px;
+
+            color: #8b8b9e;
+
+            margin-bottom: 7px;
+        }
+
+
+        .value {
+
+            font-size: 13px;
+
+            font-weight: bold;
+
+            line-height: 1.4;
+
+            word-break: break-word;
+        }
+
+
+        .not-detected {
+
+            color: #9999aa;
+
+            font-style: italic;
+
+            font-weight: normal;
+        }
+
+
+        /* ==================================================
+           FOOTER
+           ================================================== */
+
+        footer {
+
+            text-align: center;
+
+            color: #9292a5;
+
+            font-size: 10px;
+
+            line-height: 1.7;
+
+            padding:
+                0 20px
+                30px;
+        }
+
+
+        /* ==================================================
+           RESPONSIVE
+           ================================================== */
+
+        @media (max-width: 650px) {
+
+            .header {
+
+                padding:
+                    20px 16px
+                    60px;
+            }
+
+
+            .header h1 {
+
+                font-size: 23px;
+            }
+
+
+            .container {
+
+                width: 94%;
+            }
+
+
+            .card {
+
+                padding: 18px;
+            }
+
+
+            .results-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .buttons {
+
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
 
 </head>
 
 
 <body>
 
-<div class="page">
 
-
-    <!-- =========================
+    <!-- ==================================================
          HEADER
-    ========================== -->
+         ================================================== -->
 
     <header class="header">
 
-        <div class="logo">
+        <div class="brand">
 
-            <div class="logo-icon">
+            <div class="brand-icon">
                 📄
             </div>
 
@@ -39,53 +613,51 @@
         </div>
 
 
-        <div class="header-text">
+        <h1>
+            Dématérialisation intelligente des factures
+        </h1>
 
-            <h1>
-                Analyseur intelligent de factures
-            </h1>
 
-            <p>
-                Extrayez automatiquement les informations
-                importantes de vos factures grâce à l'OCR.
-            </p>
-
-        </div>
+        <p>
+            Analysez automatiquement vos factures
+            et extrayez leurs principales informations
+            grâce à l'intelligence artificielle.
+        </p>
 
     </header>
 
 
 
-    <!-- =========================
+    <!-- ==================================================
          MAIN
-    ========================== -->
+         ================================================== -->
 
-    <main>
+    <main class="container">
 
 
-        <!-- =========================
-             UPLOAD SECTION
-        ========================== -->
+        <!-- ==================================================
+             UPLOAD CARD
+             ================================================== -->
 
-        <section class="upload-card">
+        <section class="card">
 
 
             <div class="section-header">
 
                 <div class="section-icon">
-                    📤
+                    📥
                 </div>
 
                 <div>
 
-                    <h2>
+                    <div class="section-title">
                         Importer une facture
-                    </h2>
+                    </div>
 
-                    <p>
-                        Téléchargez votre facture pour commencer
-                        l'analyse.
-                    </p>
+                    <div class="section-subtitle">
+                        Sélectionnez une facture PDF ou image
+                        pour commencer l'analyse.
+                    </div>
 
                 </div>
 
@@ -93,116 +665,98 @@
 
 
 
-            <!-- FORM -->
+            <!-- Upload -->
 
-            <form
-                id="invoiceForm"
-                action="/upload"
-                method="POST"
-                enctype="multipart/form-data">
+            <label
+                id="uploadArea"
+                for="invoiceFile"
+                class="upload-area"
+            >
 
-
-                <!-- FILE INPUT -->
-
-                <div class="drop-zone">
-
-                    <div class="upload-big-icon">
-                        📁
-                    </div>
-
-
-                    <h3>
-                        Téléchargez votre facture
-                    </h3>
-
-
-                    <p>
-                        PNG, JPG, JPEG, WEBP ou PDF
-                    </p>
-
-
-                    <input
-                        type="file"
-                        id="invoice"
-                        name="invoice"
-                        accept=".png,.jpg,.jpeg,.webp,.pdf"
-                        hidden
-                        required>
-
-
-                    <label
-                        for="invoice"
-                        class="file-button">
-
-                        📁 Choisir une facture
-
-                    </label>
-
-
-                    <div
-                        id="fileName"
-                        class="file-name">
-
-                        Aucun fichier sélectionné
-
-                    </div>
-
+                <div class="upload-icon">
+                    📁
                 </div>
 
 
-
-                <!-- ANALYZE BUTTON -->
-
-                <button
-                    type="submit"
-                    id="analyzeButton"
-                    class="analyze-button">
-
-                    🔍 Analyser la facture
-
-                </button>
-
-            </form>
+                <div class="upload-title">
+                    Téléchargez votre facture
+                </div>
 
 
+                <div class="upload-subtitle">
+                    PDF, PNG, JPG, JPEG ou WEBP
+                </div>
 
-            <!-- LOADING -->
 
-            <div
-                id="loading"
-                class="loading hidden">
-
-                <div class="spinner"></div>
-
-                <span>
-                    Analyse en cours...
+                <span class="choose-button">
+                    📂 Choisir une facture
                 </span>
 
+
+                <input
+                    id="invoiceFile"
+                    class="file-input"
+                    type="file"
+                    accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"
+                >
+
+
+                <div
+                    id="fileName"
+                    class="file-name"
+                >
+                    Aucun fichier sélectionné
+                </div>
+
+            </label>
+
+
+
+            <!-- Buttons -->
+
+            <div class="buttons">
+
+                <button
+                    id="analyzeButton"
+                    class="analyze-button"
+                    type="button"
+                >
+                    🔍 Analyser la facture
+                </button>
+
+
+                <button
+                    id="newButton"
+                    class="new-button"
+                    type="button"
+                >
+                    🔄 Nouvelle facture
+                </button>
+
             </div>
 
 
 
-            <!-- STATUS -->
+            <!-- Status -->
 
             <div
-                id="statusMessage"
-                class="status">
-
-            </div>
-
+                id="status"
+                class="status"
+            ></div>
 
         </section>
 
 
 
-        <!-- =========================
-             RESULTS
-        ========================== -->
+        <!-- ==================================================
+             RESULTS CARD
+             ================================================== -->
 
-        <section class="results-card">
+        <section
+            id="results"
+            class="card"
+        >
 
-
-            <!-- RESULTS HEADER -->
 
             <div class="section-header">
 
@@ -212,14 +766,14 @@
 
                 <div>
 
-                    <h2>
+                    <div class="section-title">
                         Informations extraites
-                    </h2>
+                    </div>
 
-                    <p>
-                        Les informations détectées dans votre facture
-                        apparaîtront ici.
-                    </p>
+                    <div class="section-subtitle">
+                        Résultats de l'analyse automatique
+                        de la facture.
+                    </div>
 
                 </div>
 
@@ -227,421 +781,670 @@
 
 
 
-            <!-- =========================
-                 INVOICE INFORMATION
-            ========================== -->
-
-            <div class="information-grid">
+            <div class="results-grid">
 
 
-                <!-- CLIENT -->
+                <!-- 1. Client -->
 
-                <div class="information-box">
+                <div class="result-field">
 
-                    <span class="information-icon">
-                        👤
-                    </span>
+                    <div class="label">
+                        Nom du client
+                    </div>
 
-                    <div>
-
-                        <span class="label">
-                            Nom du client
-                        </span>
-
-                        <strong id="clientName">
-                            -
-                        </strong>
-
+                    <div
+                        id="clientName"
+                        class="value"
+                    >
+                        Non détecté
                     </div>
 
                 </div>
 
 
 
-                <!-- FOURNISSEUR -->
+                <!-- 2. Fournisseur -->
 
-                <div class="information-box">
+                <div class="result-field">
 
-                    <span class="information-icon">
-                        🏢
-                    </span>
+                    <div class="label">
+                        Nom du fournisseur
+                    </div>
 
-                    <div>
-
-                        <span class="label">
-                            Nom du fournisseur
-                        </span>
-
-                        <strong id="supplierName">
-                            -
-                        </strong>
-
+                    <div
+                        id="supplierName"
+                        class="value"
+                    >
+                        Non détecté
                     </div>
 
                 </div>
 
 
 
-                <!-- ICE CLIENT -->
+                <!-- 3. ICE Client -->
 
-                <div class="information-box">
+                <div class="result-field">
 
-                    <span class="information-icon">
-                        🆔
-                    </span>
+                    <div class="label">
+                        ICE client
+                    </div>
 
-                    <div>
-
-                        <span class="label">
-                            ICE Client
-                        </span>
-
-                        <strong id="clientICE">
-                            -
-                        </strong>
-
+                    <div
+                        id="clientIce"
+                        class="value"
+                    >
+                        Non détecté
                     </div>
 
                 </div>
 
 
 
-                <!-- ICE FOURNISSEUR -->
+                <!-- 4. ICE Fournisseur -->
 
-                <div class="information-box">
+                <div class="result-field">
 
-                    <span class="information-icon">
-                        🆔
-                    </span>
+                    <div class="label">
+                        ICE fournisseur
+                    </div>
 
-                    <div>
-
-                        <span class="label">
-                            ICE Fournisseur
-                        </span>
-
-                        <strong id="supplierICE">
-                            -
-                        </strong>
-
+                    <div
+                        id="supplierIce"
+                        class="value"
+                    >
+                        Non détecté
                     </div>
 
                 </div>
 
 
 
-                <!-- DATE -->
+                <!-- 5. Date -->
 
-                <div class="information-box">
+                <div class="result-field">
 
-                    <span class="information-icon">
-                        📅
-                    </span>
+                    <div class="label">
+                        Date facture
+                    </div>
 
-                    <div>
-
-                        <span class="label">
-                            Date de la facture
-                        </span>
-
-                        <strong id="invoiceDate">
-                            -
-                        </strong>
-
+                    <div
+                        id="invoiceDate"
+                        class="value"
+                    >
+                        Non détecté
                     </div>
 
                 </div>
 
 
 
-                <!-- HT -->
+                <!-- 6. HT -->
 
-                <div class="information-box">
+                <div class="result-field">
 
-                    <span class="information-icon">
-                        💰
-                    </span>
+                    <div class="label">
+                        Total HT
+                    </div>
 
-                    <div>
-
-                        <span class="label">
-                            Montant HT
-                        </span>
-
-                        <strong id="amountHT">
-                            -
-                        </strong>
-
+                    <div
+                        id="amountHt"
+                        class="value"
+                    >
+                        Non détecté
                     </div>
 
                 </div>
 
 
 
-                <!-- TVA -->
+                <!-- 7. TVA -->
 
-                <div class="information-box">
+                <div class="result-field">
 
-                    <span class="information-icon">
-                        %
-                    </span>
+                    <div class="label">
+                        Total TVA
+                    </div>
 
-                    <div>
-
-                        <span class="label">
-                            TVA
-                        </span>
-
-                        <strong id="tva">
-                            -
-                        </strong>
-
+                    <div
+                        id="tva"
+                        class="value"
+                    >
+                        Non détecté
                     </div>
 
                 </div>
 
 
 
-                <!-- TTC -->
-
-                <div class="information-box ttc">
-
-                    <span class="information-icon">
-                        💳
-                    </span>
-
-                    <div>
-
-                        <span class="label">
-                            Montant TTC
-                        </span>
-
-                        <strong id="amountTTC">
-                            -
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-            </div>
-
-
-
-            <!-- =========================
-                 PAYMENT INFORMATION
-            ========================== -->
-
-            <div class="payment-container">
-
-
-                <div class="payment-title">
-
-                    <div class="section-icon">
-                        💳
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Informations de paiement
-                        </h3>
-
-                        <p>
-                            Informations bancaires détectées
-                            dans la facture.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-
-                <div class="information-grid">
-
-
-                    <!-- PAYMENT METHOD -->
-
-                    <div class="information-box">
-
-                        <span class="information-icon">
-                            💳
-                        </span>
-
-                        <div>
-
-                            <span class="label">
-                                Mode de paiement
-                            </span>
-
-                            <strong id="paymentMethod">
-                                -
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- RIB -->
-
-                    <div class="information-box">
-
-                        <span class="information-icon">
-                            🏦
-                        </span>
-
-                        <div>
-
-                            <span class="label">
-                                RIB
-                            </span>
-
-                            <strong id="rib">
-                                -
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- BANK -->
-
-                    <div class="information-box">
-
-                        <span class="information-icon">
-                            🏛️
-                        </span>
-
-                        <div>
-
-                            <span class="label">
-                                Banque
-                            </span>
-
-                            <strong id="bank">
-                                -
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- SWIFT -->
-
-                    <div class="information-box">
-
-                        <span class="information-icon">
-                            🌐
-                        </span>
-
-                        <div>
-
-                            <span class="label">
-                                SWIFT / BIC
-                            </span>
-
-                            <strong id="swift">
-                                -
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                </div>
-
-            </div>
-
-
-
-            <!-- =========================
-                 OCR
-            ========================== -->
-
-            <div class="ocr-container">
-
-
-                <div class="ocr-title">
-
-                    <div class="section-icon">
-                        📝
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Texte extrait par OCR
-                        </h3>
-
-                        <p>
-                            Texte détecté automatiquement
-                            dans votre facture.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
+                <!-- 8. TTC -->
 
                 <div
-                    id="ocrText"
-                    class="ocr-text">
+                    class="result-field highlight"
+                >
 
-                    <span>
-                        Le texte de votre facture apparaîtra ici
-                        après l'analyse.
-                    </span>
+                    <div class="label">
+                        Total TTC
+                    </div>
+
+                    <div
+                        id="amountTtc"
+                        class="value"
+                    >
+                        Non détecté
+                    </div>
 
                 </div>
 
 
             </div>
 
-
         </section>
-
 
     </main>
 
 
 
-    <!-- =========================
+    <!-- ==================================================
          FOOTER
-    ========================== -->
+         ================================================== -->
 
     <footer>
 
-        <p>
-            Invoice AI • Analyse intelligente de factures
-        </p>
+        <div>
+            Invoice AI • Dématérialisation intelligente des factures
+        </div>
 
-        <span>
-            Python • Flask • Tesseract OCR
-        </span>
+        <div>
+            HTML • CSS • JavaScript • Python • Flask • OpenAI API • JSON
+        </div>
 
     </footer>
 
 
-</div>
+
+    <!-- ==================================================
+         JAVASCRIPT
+         ================================================== -->
+
+    <script>
 
 
+        // =================================================
+        // ELEMENTS
+        // =================================================
 
-<!-- =========================
-     JAVASCRIPT
-========================== -->
+        const fileInput =
+            document.getElementById(
+                "invoiceFile"
+            );
 
-<script src="{{ url_for('static', filename='app.js') }}"></script>
 
+        const fileName =
+            document.getElementById(
+                "fileName"
+            );
+
+
+        const uploadArea =
+            document.getElementById(
+                "uploadArea"
+            );
+
+
+        const analyzeButton =
+            document.getElementById(
+                "analyzeButton"
+            );
+
+
+        const newButton =
+            document.getElementById(
+                "newButton"
+            );
+
+
+        const status =
+            document.getElementById(
+                "status"
+            );
+
+
+        const results =
+            document.getElementById(
+                "results"
+            );
+
+
+        // =================================================
+        // DISPLAY FILE NAME
+        // =================================================
+
+        function updateFileName() {
+
+            if (
+                fileInput.files.length > 0
+            ) {
+
+                fileName.textContent =
+                    fileInput.files[0].name;
+
+            } else {
+
+                fileName.textContent =
+                    "Aucun fichier sélectionné";
+
+            }
+
+        }
+
+
+        // =================================================
+        // FILE SELECTION
+        // =================================================
+
+        fileInput.addEventListener(
+            "change",
+            function () {
+
+                updateFileName();
+
+                status.textContent = "";
+
+                status.className = "status";
+
+            }
+        );
+
+
+        // =================================================
+        // DRAG & DROP
+        // =================================================
+
+        uploadArea.addEventListener(
+            "dragover",
+            function (event) {
+
+                event.preventDefault();
+
+                uploadArea.classList.add(
+                    "dragover"
+                );
+
+            }
+        );
+
+
+        uploadArea.addEventListener(
+            "dragleave",
+            function () {
+
+                uploadArea.classList.remove(
+                    "dragover"
+                );
+
+            }
+        );
+
+
+        uploadArea.addEventListener(
+            "drop",
+            function (event) {
+
+                event.preventDefault();
+
+                uploadArea.classList.remove(
+                    "dragover"
+                );
+
+
+                const files =
+                    event.dataTransfer.files;
+
+
+                if (files.length > 0) {
+
+                    fileInput.files =
+                        files;
+
+                    updateFileName();
+
+                }
+
+            }
+        );
+
+
+        // =================================================
+        // DISPLAY RESULT VALUE
+        // =================================================
+
+        function displayValue(
+            elementId,
+            value
+        ) {
+
+            const element =
+                document.getElementById(
+                    elementId
+                );
+
+
+            if (
+                value === null ||
+                value === undefined ||
+                String(value).trim() === "" ||
+                String(value).trim() === "-"
+            ) {
+
+                element.textContent =
+                    "Non détecté";
+
+                element.classList.add(
+                    "not-detected"
+                );
+
+            } else {
+
+                element.textContent =
+                    value;
+
+                element.classList.remove(
+                    "not-detected"
+                );
+
+            }
+
+        }
+
+
+        // =================================================
+        // ANALYZE INVOICE
+        // =================================================
+
+        analyzeButton.addEventListener(
+            "click",
+            async function () {
+
+
+                // -----------------------------------------
+                // Check file
+                // -----------------------------------------
+
+                if (
+                    fileInput.files.length === 0
+                ) {
+
+                    status.className =
+                        "status error";
+
+                    status.textContent =
+                        "⚠️ Veuillez sélectionner une facture.";
+
+                    return;
+
+                }
+
+
+                // -----------------------------------------
+                // Create FormData
+                // -----------------------------------------
+
+                const formData =
+                    new FormData();
+
+
+                formData.append(
+                    "invoice",
+                    fileInput.files[0]
+                );
+
+
+                // -----------------------------------------
+                // Loading state
+                // -----------------------------------------
+
+                analyzeButton.disabled =
+                    true;
+
+                newButton.style.display =
+                    "none";
+
+
+                analyzeButton.textContent =
+                    "⏳ Analyse en cours...";
+
+
+                status.className =
+                    "status loading";
+
+                status.textContent =
+                    "L'intelligence artificielle analyse votre facture...";
+
+
+                try {
+
+
+                    // -------------------------------------
+                    // Send invoice to Flask
+                    // -------------------------------------
+
+                    const response =
+                        await fetch(
+                            "/upload",
+                            {
+                                method: "POST",
+                                body: formData
+                            }
+                        );
+
+
+                    // -------------------------------------
+                    // Read JSON
+                    // -------------------------------------
+
+                    const data =
+                        await response.json();
+
+
+                    // -------------------------------------
+                    // Error
+                    // -------------------------------------
+
+                    if (
+                        !response.ok ||
+                        !data.success
+                    ) {
+
+                        throw new Error(
+                            data.message ||
+                            "Une erreur est survenue."
+                        );
+
+                    }
+
+
+                    // -------------------------------------
+                    // Display the 8 fields
+                    // -------------------------------------
+
+                    displayValue(
+                        "clientName",
+                        data.client_name
+                    );
+
+
+                    displayValue(
+                        "supplierName",
+                        data.supplier_name
+                    );
+
+
+                    displayValue(
+                        "clientIce",
+                        data.client_ice
+                    );
+
+
+                    displayValue(
+                        "supplierIce",
+                        data.supplier_ice
+                    );
+
+
+                    displayValue(
+                        "invoiceDate",
+                        data.invoice_date
+                    );
+
+
+                    displayValue(
+                        "amountHt",
+                        data.amount_ht
+                    );
+
+
+                    displayValue(
+                        "tva",
+                        data.tva
+                    );
+
+
+                    displayValue(
+                        "amountTtc",
+                        data.amount_ttc
+                    );
+
+
+                    // -------------------------------------
+                    // Show results
+                    // -------------------------------------
+
+                    results.style.display =
+                        "block";
+
+
+                    status.className =
+                        "status success";
+
+                    status.textContent =
+                        "✓ Facture analysée avec succès.";
+
+
+                    analyzeButton.textContent =
+                        "✓ Facture analysée";
+
+
+                    newButton.style.display =
+                        "block";
+
+
+                    // -------------------------------------
+                    // Scroll to results
+                    // -------------------------------------
+
+                    results.scrollIntoView({
+
+                        behavior: "smooth",
+
+                        block: "start"
+
+                    });
+
+
+                } catch (error) {
+
+
+                    console.error(
+                        error
+                    );
+
+
+                    status.className =
+                        "status error";
+
+
+                    status.textContent =
+                        "❌ " +
+                        error.message;
+
+
+                    analyzeButton.textContent =
+                        "🔍 Analyser la facture";
+
+                }
+
+
+                // -----------------------------------------
+                // Enable button
+                // -----------------------------------------
+
+                analyzeButton.disabled =
+                    false;
+
+            }
+        );
+
+
+        // =================================================
+        // NEW INVOICE
+        // =================================================
+
+        newButton.addEventListener(
+            "click",
+            function () {
+
+
+                // Clear file
+
+                fileInput.value =
+                    "";
+
+
+                fileName.textContent =
+                    "Aucun fichier sélectionné";
+
+
+                // Hide results
+
+                results.style.display =
+                    "none";
+
+
+                // Clear status
+
+                status.className =
+                    "status";
+
+                status.textContent =
+                    "";
+
+
+                // Reset button
+
+                analyzeButton.textContent =
+                    "🔍 Analyser la facture";
+
+
+                newButton.style.display =
+                    "none";
+
+
+                // Scroll to top
+
+                window.scrollTo({
+
+                    top: 0,
+
+                    behavior: "smooth"
+
+                });
+
+            }
+        );
+
+
+    </script>
 
 </body>
 
